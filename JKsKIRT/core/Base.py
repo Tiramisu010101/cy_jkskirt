@@ -11,7 +11,8 @@ def Start(wfile,
           H_0,
           Om_m,
           indent,
-          indent_base
+          indent_base,
+          mode = 'ExtinctionOnly'
           ):
     
     N_idt = indent_base
@@ -19,8 +20,12 @@ def Start(wfile,
     print((N_idt)*indent+"<?xml version='1.0' encoding='UTF-8'?>",file=wfile)
     print((N_idt)*indent+"<!-- A SKIRT parameter file © Astronomical Observatory, Ghent University -->",file=wfile)
     print((N_idt)*indent+'<skirt-simulation-hierarchy type="MonteCarloSimulation" format="9" producer="Python toolkit for SKIRT (SkiFile class)" time="2020-05-21T15:04:51">',file=wfile)
-    
-    print((N_idt+1)*indent+'<MonteCarloSimulation userLevel="Expert" simulationMode="ExtinctionOnly" numPackets="%s">'%(N_phot),file=wfile)
+    if mode == 'DustEmission':
+        print((N_idt+1)*indent+'<MonteCarloSimulation userLevel="Expert" simulationMode="DustEmission" iteratePrimaryEmission="false" iterateSecondaryEmission="false" numPackets="%s">'%(N_phot),file=wfile)
+    elif mode == 'trans':
+        print((N_idt+1)*indent+'<MonteCarloSimulation userLevel="Expert" simulationMode="NoMedium" numPackets="%s">'%(N_phot),file=wfile)
+    else:
+        print((N_idt+1)*indent+'<MonteCarloSimulation userLevel="Expert" simulationMode="ExtinctionOnly" numPackets="%s">'%(N_phot),file=wfile)
     print((N_idt+2)*indent+'<random type="Random">',file=wfile)
     print((N_idt+3)*indent+'<Random seed="%s"/>'%(rnd_seed),file=wfile)        
     print((N_idt+2)*indent+'</random>',file=wfile)
