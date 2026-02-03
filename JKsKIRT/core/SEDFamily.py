@@ -106,14 +106,17 @@ def FSPS(wfile,
 
 
 def Bpass(wfile,
+          imf,
+          resolution,
           indent,
           indent_base
           ):
     
     N_idt = indent_base
-
+    if imf == 'Chabrier':
+        imf = 'Chabrier300'
     print((N_idt)*indent+'<sedFamily type="SEDFamily">',file=wfile)
-    print((N_idt+1)*indent+'<BpassSEDFamily/>',file=wfile)
+    print((N_idt+1)*indent+'<BpassSEDFamily imf="%s" resolution="%s"/>'%(imf,resolution),file=wfile)
     print((N_idt)*indent+'</sedFamily>',file=wfile)
     
     return N_idt
@@ -160,7 +163,30 @@ def LyaDoublePeak(wfile,
     
     return N_idt
 
+def Toddlers(wfile,
+             indent,
+             indent_base,
+             stellartemplate,
+             includedust,
+             resolution,
+             sfrperiod
+             ):
+    
+    # if pahfraction == 'high':
+    #     pahfraction = 'High'
+    # if pahfraction == 'low':
+    #     pahfraction = 'Low'
+    # if resolution == 'high':
+    #     resolution = 'High'
+    # if resolution == 'low':
+    #     resolution = 'Low'
 
+    N_idt = indent_base
+
+    print((N_idt)*indent+'<sedFamily type="SEDFamily">',file=wfile)
+    print((N_idt+1)*indent+'<ToddlersSEDFamily sedMode="SFRNormalized" stellarTemplate="%s" includeDust="%s" resolution="%s" sfrPeriod="%s"/>'%(stellartemplate,includedust,resolution,sfrperiod),file=wfile)
+    print((N_idt)*indent+'</sedFamily>',file=wfile)
+    return N_idt
 
 
 

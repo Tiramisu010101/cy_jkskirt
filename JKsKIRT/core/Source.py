@@ -36,6 +36,10 @@ def Source_System(wfile,
                   sed_type_young,
                   sed_imf_young,
                   sed_res_young,
+                  sed_pahfraction_young,
+                  tod_sedtemplate,
+                  tod_includedust,
+                  tod_sfrperiod,
 
                   indent,
                   indent_base
@@ -88,6 +92,8 @@ def Source_System(wfile,
                                indent_base=N_idt+4)    
     if sed_type_old == 'Bpass' or sed_type_old == 'BPASS':
         dummy = SEDFamily.Bpass(wfile=wfile,
+                                imf=sed_imf_old,
+                                resolution=sed_res_old,
                                 indent=indent,
                                 indent_base=N_idt+4)    
     if sed_type_old == 'LyaGaussian' or sed_type_old == 'LyAGaussian':
@@ -127,6 +133,14 @@ def Source_System(wfile,
             dummy = SEDFamily.MappingsIII(wfile=wfile,
                                           indent=indent,
                                           indent_base=N_idt+4)
+        elif sed_type_young == 'Toddlers' or sed_type_young == 'toddlers':
+            dummy = SEDFamily.Toddlers(wfile=wfile,
+                                        indent=indent,
+                                        indent_base=N_idt+4,
+                                        stellartemplate=tod_sedtemplate,
+                                        includedust=tod_includedust,
+                                        resolution=sed_res_young,
+                                        sfrperiod=tod_sfrperiod)
 
         dummy = Base.Wave_Bias(wfile=wfile,
                                bias_type=bias_type,

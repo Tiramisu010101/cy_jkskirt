@@ -9,6 +9,8 @@ def Inst_System(
                
                 def_wv_grid,
                includeGALEX,
+               includejohnson,
+               includespitzer,
                includeSDSS,
                include2MASS,
                includeWISE,
@@ -77,8 +79,8 @@ def Inst_System(
                inst_2d_sed_N_wv_sub = 200,
                inst_2d_sed_repo='./',
                inst_2d_sed_fname='inst_2d_sed.txt',
-               inst_2d_sed_relHW=0
-    
+               inst_2d_sed_relHW=0,
+               visual = False
                 ):
 
 
@@ -89,7 +91,7 @@ def Inst_System(
     print((N_idt+2)*indent+'<defaultWavelengthGrid type="WavelengthGrid">',file=wfile)
     
     if def_wv_grid == 'pre-defined':
-        print((N_idt+3)*indent+'<PredefinedBandWavelengthGrid includeGALEX="%s" includeSDSS="%s" include2MASS="%s" includeWISE="%s" includeHERSCHEL="%s"/>'%(includeGALEX,includeSDSS,include2MASS,includeWISE,includeHERSCHEL),file=wfile)
+        print((N_idt+3)*indent+'<PredefinedBandWavelengthGrid includeGALEX="%s" includejohnson="%s" includespitzer="%s" includeSDSS="%s" include2MASS="%s" includeWISE="%s" includeHERSCHEL="%s"/>'%(includeGALEX,includejohnson,includespitzer,includeSDSS,include2MASS,includeWISE,includeHERSCHEL),file=wfile)
         
     print((N_idt+2)*indent+'</defaultWavelengthGrid>',file=wfile)   
     print((N_idt+2)*indent+'<instruments type="Instrument">',file=wfile)   
@@ -100,6 +102,9 @@ def Inst_System(
         inc_space = np.linspace(inc_min,inc_max,int((inc_max-inc_min)/inc_del+1)).astype(np.int32)
     else:
         inc_space = np.array([inc_min]).astype(np.int32)
+    
+    if inc_default == 'kapoor':
+        inc_space = np.array([0,26,37,46,53,60,66,73,90]).astype(np.int32)
     
     if azm_min != azm_max:
         azm_space = np.linspace(azm_min,azm_max,int((azm_max-azm_min)/azm_del+1)).astype(np.int32)
@@ -142,6 +147,15 @@ def Inst_System(
                 pass
             
             fname_ij = 'rot_'+inc_chr+"_"+azm_chr
+            fname_ij_visual = 'rot_'+inc_chr+"_"+azm_chr+"_visual"
+            fname_ij_visual2 = 'rot_'+inc_chr+"_"+azm_chr+"_visual2"
+            fname_ij_visual4 = 'rot_'+inc_chr+"_"+azm_chr+"_visual4"
+            fname_ij_visual6 = 'rot_'+inc_chr+"_"+azm_chr+"_visual6"
+            fname_ij_visual8 = 'rot_'+inc_chr+"_"+azm_chr+"_visual8"
+            fname_ij_visual10 = 'rot_'+inc_chr+"_"+azm_chr+"_visual10"
+            fname_ij_visual24 = 'rot_'+inc_chr+"_"+azm_chr+"_visual24"
+
+
 
 #             if inc_i//10 == 0 and azm_j//10 == 0:
 #                 fname_ij = 'rot_0%s_0%s'%(inc_i,azm_j)
@@ -152,54 +166,86 @@ def Inst_System(
 #             else:
 #                 fname_ij = 'rot_%s_%s'%(inc_i,azm_j)  
             
-            if inst_2d_sed_on == False or inst_2d_sed_on == 'false':
-                if len(CustomFilterList) == 0:
-                    print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s"/>'%(fname_ij,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,Npix_X,centre_X,fov_unit,fov_Y,fov_unit,Npix_Y,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
-                else:
-                    print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s">'%(fname_ij,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,Npix_X,centre_X,fov_unit,fov_Y,fov_unit,Npix_Y,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
-                    print((N_idt+4)*indent+'<wavelengthGrid type="WavelengthGrid">',file=wfile) 
-                    print((N_idt+5)*indent+'<ConfigurableBandWavelengthGrid>',file=wfile)
-                    print((N_idt+6)*indent+'<bands type="Band">',file=wfile)
-                    
-                    #includeGALEX,  includeSDSS,  include2MASS,    includeWISE, includeHERSCHEL,
-                    if includeGALEX in [True,'true']:
-                        print((N_idt+7)*indent+'<BroadBand bandName="GALEX_GALEX_FUV"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="GALEX_GALEX_NUV"/>',file=wfile)
-                    if includeSDSS in [True,'true']:
-                        print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_U"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_G"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_R"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_I"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_Z"/>',file=wfile)
-                    if include2MASS in [True,'true']:
-                        print((N_idt+7)*indent+'<BroadBand bandName="2MASS_2MASS_J"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="2MASS_2MASS_H"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="2MASS_2MASS_KS"/>',file=wfile)
-                    if includeWISE in [True,'true']:
-                        print((N_idt+7)*indent+'<BroadBand bandName="WISE_WISE_W1"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="WISE_WISE_W2"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="WISE_WISE_W3"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="WISE_WISE_W4"/>',file=wfile)
-                    if includeHERSCHEL in [True,'true']:
-                        print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_PACS_70"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_PACS_100"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_PACS_160"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_SPIRE_250"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_SPIRE_350"/>',file=wfile)
-                        print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_SPIRE_500"/>',file=wfile)
-                    
-                    cfl = 0
-                    while cfl < len(CustomFilterList):
-                        print((N_idt+7)*indent+'<FileBand filename="%s"/>'%(CustomFilterList[cfl]),file=wfile)
-                        cfl += 1
-                    
-                    print((N_idt+6)*indent+'</bands>',file=wfile)
-                    print((N_idt+5)*indent+'</ConfigurableBandWavelengthGrid>',file=wfile)
-                    print((N_idt+4)*indent+'</wavelengthGrid>',file=wfile)
-                    print((N_idt+3)*indent+'</FullInstrument>',file=wfile)
-                    
+            if len(CustomFilterList) == 0:
+                print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s"/>'%(fname_ij,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,Npix_X,centre_X,fov_unit,fov_Y,fov_unit,Npix_Y,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+                if visual == True or visual == 'true':
+                    print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s"/>'%(fname_ij_visual,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,1031,centre_X,fov_unit,fov_Y,fov_unit,1031,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+                    print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s"/>'%(fname_ij_visual2,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,515,centre_X,fov_unit,fov_Y,fov_unit,515,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+                    print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s"/>'%(fname_ij_visual4,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,257,centre_X,fov_unit,fov_Y,fov_unit,257,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+                    print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s"/>'%(fname_ij_visual6,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,171,centre_X,fov_unit,fov_Y,fov_unit,171,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+                    print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s"/>'%(fname_ij_visual8,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,128,centre_X,fov_unit,fov_Y,fov_unit,128,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+                    print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s"/>'%(fname_ij_visual10,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,103,centre_X,fov_unit,fov_Y,fov_unit,103,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+                    print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s"/>'%(fname_ij_visual24,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,42,centre_X,fov_unit,fov_Y,fov_unit,42,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+
             else:
                 print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s">'%(fname_ij,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,Npix_X,centre_X,fov_unit,fov_Y,fov_unit,Npix_Y,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+                print((N_idt+4)*indent+'<wavelengthGrid type="WavelengthGrid">',file=wfile) 
+                print((N_idt+5)*indent+'<ConfigurableBandWavelengthGrid>',file=wfile)
+                print((N_idt+6)*indent+'<bands type="Band">',file=wfile)
+                
+                #includeGALEX,  includejohnson, includeSDSS,  include2MASS,    includeWISE, includeHERSCHEL,
+                if includeGALEX in [True,'true']:
+                    print((N_idt+7)*indent+'<BroadBand bandName="GALEX_GALEX_FUV"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="GALEX_GALEX_NUV"/>',file=wfile)
+                if includeSDSS in [True,'true']:
+                    print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_U"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_G"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_R"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_I"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="SLOAN_SDSS_Z"/>',file=wfile)
+                    
+                if includejohnson in [True,'true']:
+                    print((N_idt+7)*indent+'<BroadBand bandName="GENERIC_JOHNSON_U"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="GENERIC_JOHNSON_B"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="GENERIC_JOHNSON_V"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="GENERIC_JOHNSON_J"/>',file=wfile)
+                if includespitzer in [True,'true']:
+                    print((N_idt+7)*indent+'<BroadBand bandName="SPITZER_IRAC_I1"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="SPITZER_IRAC_I2"/>',file=wfile)
+
+                if include2MASS in [True,'true']:
+                    print((N_idt+7)*indent+'<BroadBand bandName="2MASS_2MASS_J"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="2MASS_2MASS_H"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="2MASS_2MASS_KS"/>',file=wfile)
+                if includeWISE in [True,'true']:
+                    print((N_idt+7)*indent+'<BroadBand bandName="WISE_WISE_W1"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="WISE_WISE_W2"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="WISE_WISE_W3"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="WISE_WISE_W4"/>',file=wfile)
+                if includeHERSCHEL in [True,'true']:
+                    print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_PACS_70"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_PACS_100"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_PACS_160"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_SPIRE_250"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_SPIRE_350"/>',file=wfile)
+                    print((N_idt+7)*indent+'<BroadBand bandName="HERSCHEL_SPIRE_500"/>',file=wfile)
+                
+                cfl = 0
+                while cfl < len(CustomFilterList):
+                    print((N_idt+7)*indent+'<BroadBand bandName="%s"/>'%(CustomFilterList[cfl]),file=wfile)
+                    cfl += 1
+                
+                print((N_idt+6)*indent+'</bands>',file=wfile)
+                print((N_idt+5)*indent+'</ConfigurableBandWavelengthGrid>',file=wfile)
+                print((N_idt+4)*indent+'</wavelengthGrid>',file=wfile)
+                print((N_idt+3)*indent+'</FullInstrument>',file=wfile)
+                    
+            # else:
+            #     print((N_idt+3)*indent+'<FullInstrument instrumentName="%s" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s">'%(fname_ij,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,Npix_X,centre_X,fov_unit,fov_Y,fov_unit,Npix_Y,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
+            #     print((N_idt+4)*indent+'<wavelengthGrid type="WavelengthGrid">',file=wfile)
+            #     if inst_2d_sed_type == 'lin':
+            #         print((N_idt+5)*indent+'<LinWavelengthGrid minWavelength="%s %s" maxWavelength="%s %s" numWavelengths="%s"/>'%(inst_2d_sed_min_wv,inst_2d_sed_unit,inst_2d_sed_max_wv,inst_2d_sed_unit,inst_2d_sed_N_wv),file=wfile)
+            #     elif inst_2d_sed_type == 'log':
+            #         print((N_idt+5)*indent+'<LogWavelengthGrid minWavelength="%s %s" maxWavelength="%s %s" numWavelengths="%s"/>'%(inst_2d_sed_min_wv,inst_2d_sed_unit,inst_2d_sed_max_wv,inst_2d_sed_unit,inst_2d_sed_N_wv),file=wfile)
+            #     elif inst_2d_sed_type == 'nestlog':
+            #         print((N_idt+5)*indent+'<NestedLogWavelengthGrid minWavelengthBaseGrid="%s %s" maxWavelengthBaseGrid="%s %s" numWavelengthsBaseGrid="%s" minWavelengthSubGrid="%s %s" maxWavelengthSubGrid="%s %s" numWavelengthsSubGrid="%s"/>'%(inst_2d_sed_min_wv,inst_2d_sed_unit,inst_2d_sed_max_wv,inst_2d_sed_unit,inst_2d_sed_N_wv,inst_2d_sed_min_wv_sub,inst_2d_sed_unit,inst_2d_sed_max_wv_sub,inst_2d_sed_unit,inst_2d_sed_N_wv_sub),file=wfile)
+            #     elif inst_2d_sed_type == 'file':
+            #         print((N_idt+5)*indent+'<FileWavelengthGrid filename="%s/%s" relativeHalfWidth="%s" log="true"/>'%(inst_2d_sed_repo,inst_2d_sed_fname,inst_2d_sed_relHW),file=wfile)
+
+            #     print((N_idt+4)*indent+'</wavelengthGrid>',file=wfile)
+            #     print((N_idt+3)*indent+'</FullInstrument>',file=wfile)
+            if inst_2d_sed_on == True or inst_2d_sed_on == 'true':
+                print((N_idt+3)*indent+'<FullInstrument instrumentName="%s_inst_2d" distance="%s %s" inclination="%s deg" azimuth="%s deg" roll="%s deg" fieldOfViewX="%s %s" numPixelsX="%s" centerX="%s %s" fieldOfViewY="%s %s" numPixelsY="%s" centerY="%s %s" recordComponents="%s" numScatteringLevels="%s" recordPolarization="%s" recordStatistics="%s">'%(fname_ij,inst_dist,inst_dist_unit,inc_i,azm_j,roll_default,fov_X,fov_unit,Npix_X,centre_X,fov_unit,fov_Y,fov_unit,Npix_Y,centre_Y,fov_unit,recordComponents,numScatteringLevels,recordPolarization,recordStatistics),file=wfile)
                 print((N_idt+4)*indent+'<wavelengthGrid type="WavelengthGrid">',file=wfile)
                 if inst_2d_sed_type == 'lin':
                     print((N_idt+5)*indent+'<LinWavelengthGrid minWavelength="%s %s" maxWavelength="%s %s" numWavelengths="%s"/>'%(inst_2d_sed_min_wv,inst_2d_sed_unit,inst_2d_sed_max_wv,inst_2d_sed_unit,inst_2d_sed_N_wv),file=wfile)

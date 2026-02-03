@@ -1,6 +1,7 @@
 import numpy as np
 
 import os
+import sys
 import subprocess
 
 from . import make_INPUT
@@ -15,6 +16,11 @@ def execute(repo,
             N_thread):
     
     os.chdir(repo+repo_output)
+    # "mpirun -np 2 %s/skirt -t %s -b -v ../%s"%(skirt_dir,N_thread,ski_name)
+    # process = subprocess.Popen("mpirun -np 2 %s/skirt -t %s -b -v ../%s"%(skirt_dir,N_thread,ski_name),
+    #                         shell=True,
+    #                         universal_newlines=True,
+    #                         stdout=subprocess.PIPE)
     process = subprocess.Popen("%s/skirt -t %s ../%s"%(skirt_dir,N_thread,ski_name),
                                shell=True,
                                universal_newlines=True,
@@ -29,6 +35,13 @@ def delete_indat(repo,
                  opart_name,
                  ypart_name,
                  gas_name):
+    
+    if os.path.isfile(repo+opart_name):
+        os.remove(repo+opart_name)
+    if os.path.isfile(repo+ypart_name):
+        os.remove(repo+ypart_name)
+    if os.path.isfile(repo+gas_name):
+        os.remove(repo+gas_name)
 
     return 
 
@@ -36,89 +49,153 @@ def delete_indat(repo,
 
 def make_INSKI(
                boxtokpc,
-               x_s,y_s,z_s,
-               vx_s,vy_s,vz_s,
-               m_s,m0_s,
-               age_s,metal_s,
-               x_c,y_c,z_c,lvl_c,
-               vx_c,vy_c,vz_c,
-               m_c,
-               T_c,metal_c,
                param,
                pos_ctr,
                vel_ctr,
+               x_s,y_s,z_s,
+               vx_s,vy_s,vz_s,
+               m_s,m0_s,sfe_s,
+               age_s,metal_s,rho0_s,
+
+               x_c = [], y_c = [], z_c = [], lvl_c = [],
+               vx_c = [], vy_c = [], vz_c = [],
+               m_c = [],
+               T_c = [], metal_c = [],
                mC_small = [],
                mC_large = [],
                mSil_small = [],
-               mSil_large = []
+               mSil_large = [],
+
+               mPAHneu = [],
+               mPAHion = [],
+               
+               dx_dirt = []
                 ):
     
     os.makedirs(param.repo+param.repo_output,exist_ok=True)
+
+    if param.mode in ['transparent','trans','nomedium','noext','no extinction','without extinction']:
+        make_INPUT.make_input0(
+                                boxtokpc=boxtokpc,
+                                x_s=x_s,
+                                y_s=y_s,
+                                z_s=z_s,
+                                vx_s=vx_s,
+                                vy_s=vy_s,
+                                vz_s=vz_s,
+                                m_s=m_s,
+                                m0_s=m0_s,
+                                age_s=age_s,
+                                metal_s=metal_s,
+                                sfe_s=sfe_s,
+                                cnd_s=rho0_s,
+
+                                dx_dirt=dx_dirt,
+                
+                                pos_ctr=pos_ctr,
+                                vel_ctr=vel_ctr,
+                
+                                l_simbox=param.l_simbox,
+                                rotating_gal=param.rotating_gal,
+                                R_upp=param.R_upp,
+                                R_low=param.R_low,
+                                A_upp=param.A_upp,
+                                mass_weight=param.mass_weight,
+                                par_mode=param.par_mode,
+                                sig_s = param.sig_s, #[km/s]
+                                old_fbase = param.repo,
+                                old_fname = param.opart_name,
+                                add_young=param.add_young,
+                                young_fbase = param.repo,
+                                young_fname = param.ypart_name,
+                                Age_Cut = param.Age_Cut, #[Myr]
+                                SED_type_o=param.SED_type_o,
+                                SED_type_y=param.SED_type_y,
+                                import_velocity=param.import_velocity,
+                                import_dispersion=param.import_dispersion,
+                               
+                                dx_s_o = param.dx_s_o, #[pc]
+                                dx_s_y = param.dx_s_y, #[pc]
+                                adaptive_smoothing=param.adaptive_smoothing,
+                                n_targ_nbr=param.n_targ_nbr,
+                                n_job_smoothing=param.n_job_smoothing
+                                )
     
-    make_INPUT.make_input(
-                           boxtokpc=boxtokpc,
-                           x_s=x_s,
-                           y_s=y_s,
-                           z_s=z_s,
-                           vx_s=vx_s,
-                           vy_s=vy_s,
-                           vz_s=vz_s,
-                           m_s=m_s,
-                           m0_s=m0_s,
-                           age_s=age_s,
-                           metal_s=metal_s,
-                           x_c=x_c,
-                           y_c=y_c,
-                           z_c=z_c,
-                           lvl_c=lvl_c,
-                           vx_c=vx_c,
-                           vy_c=vy_c,
-                           vz_c=vz_c,
-                           m_c=m_c,
-                           T_c=T_c,
-                           metal_c=metal_c,
-                           
-                           on_the_fly_dust=param.on_the_fly_dust,             
-                           mC_small=mC_small,
-                           mC_large=mC_large,
-                           mSil_small=mSil_small,
-                           mSil_large=mSil_large,
-        
-                           pos_ctr=pos_ctr,
-                           vel_ctr=vel_ctr,
-        
-                           l_simbox=param.l_simbox,
-                           rotating_gal=param.rotating_gal,
-                           R_upp=param.R_upp,
-                           R_low=param.R_low,
-                           A_upp=param.A_upp,
-                           mass_weight=param.mass_weight,
-                           par_mode=param.par_mode,
-                           sig_s = param.sig_s, #[km/s]
-                           old_fbase = param.repo,
-                           old_fname = param.opart_name,
-                           add_young=param.add_young,
-                           young_fbase = param.repo,
-                           young_fname = param.ypart_name,
-                           Age_Cut = param.Age_Cut, #[Myr]
-                           SED_type_y=param.SED_type_y,
-                           import_velocity=param.import_velocity,
-                           import_dispersion=param.import_dispersion,
-                           gas_fbase = param.repo,
-                           gas_fname = param.gas_name,
-                           fact_dx = param.fact_dx,
-                           sig_c = param.sig_c, #[km/s]
-                           metal_dependent_dust = param.metal_dependent_dust,
-                           Zsun = param.Zsun,
-                           mtd_mod = param.mtd_mod,
-                           import_velocity_gas=param.import_velocity_gas,
-                           import_dispersion_gas=param.import_dispersion_gas,
-                           cell_medium=param.cell_medium,
-                           dx_s = param.dx_s, #[pc]
-                           adaptive_smoothing=param.adaptive_smoothing,
-                           n_targ_nbr=param.n_targ_nbr,
-                           n_job_smoothing=param.n_job_smoothing
-                          )
+    else:
+        make_INPUT.make_input(
+                            boxtokpc=boxtokpc,
+                            x_s=x_s,
+                            y_s=y_s,
+                            z_s=z_s,
+                            vx_s=vx_s,
+                            vy_s=vy_s,
+                            vz_s=vz_s,
+                            m_s=m_s,
+                            m0_s=m0_s,
+                            age_s=age_s,
+                            metal_s=metal_s,
+                            sfe_s=sfe_s,
+                            cnd_s=rho0_s,
+                            x_c=x_c,
+                            y_c=y_c,
+                            z_c=z_c,
+                            lvl_c=lvl_c,
+                            vx_c=vx_c,
+                            vy_c=vy_c,
+                            vz_c=vz_c,
+                            m_c=m_c,
+                            T_c=T_c,
+                            metal_c=metal_c,
+                            dx_dirt=dx_dirt,
+                            
+                            add_pah=param.add_pah,
+                            on_the_fly_dust=param.on_the_fly_dust,             
+                            mC_small=mC_small,
+                            mC_large=mC_large,
+                            mSil_small=mSil_small,
+                            mSil_large=mSil_large,
+
+                            mPAHneu = mPAHneu,
+                            mPAHion = mPAHion,
+            
+                            pos_ctr=pos_ctr,
+                            vel_ctr=vel_ctr,
+            
+                            l_simbox=param.l_simbox,
+                            rotating_gal=param.rotating_gal,
+                            R_upp=param.R_upp,
+                            R_low=param.R_low,
+                            A_upp=param.A_upp,
+                            mass_weight=param.mass_weight,
+                            par_mode=param.par_mode,
+                            sig_s = param.sig_s, #[km/s]
+                            old_fbase = param.repo,
+                            old_fname = param.opart_name,
+                            add_young=param.add_young,
+                            young_fbase = param.repo,
+                            young_fname = param.ypart_name,
+                            Age_Cut = param.Age_Cut, #[Myr]
+                            SED_type_o=param.SED_type_o,
+                            SED_type_y=param.SED_type_y,
+                            import_velocity=param.import_velocity,
+                            import_dispersion=param.import_dispersion,
+                            gas_fbase = param.repo,
+                            gas_fname = param.gas_name,
+                            fact_dx = param.fact_dx,
+                            sig_c = param.sig_c, #[km/s]
+                            metal_dependent_dust = param.metal_dependent_dust,
+                            Zsun = param.Zsun,
+                            mtd_mod = param.mtd_mod,
+                            import_velocity_gas=param.import_velocity_gas,
+                            import_dispersion_gas=param.import_dispersion_gas,
+                            cell_medium=param.cell_medium,
+                            dx_s_o = param.dx_s_o, #[pc]
+                            dx_s_y = param.dx_s_y, #[pc]
+                            adaptive_smoothing=param.adaptive_smoothing,
+                            n_targ_nbr=param.n_targ_nbr,
+                            n_job_smoothing=param.n_job_smoothing,
+                            torrey_fdust=param.torrey_fdust
+                            )
     
     make_SKI.writing_ski(
                    mode=param.mode,
@@ -146,15 +223,37 @@ def make_INSKI(
                    SED_type_o=param.SED_type_o,
                    SED_IMF_o=param.SED_IMF_o,
                    SED_res_o=param.SED_res_o,
+                   SED_pah_o=param.SED_pah_o,   
+                   SED_type_original_o=param.SED_type_original_o,
+                   f_conv_o=param.f_conv_o,
+                   lya_disp_o=param.lya_disp_o,
+                   lya_shape_o=param.lya_shape_o,
+                   tod_sedtemplate=param.tod_sedtemplate,
+                   tod_includedust=param.tod_includedust,
+                   tod_sfrperiod=param.tod_sfrperiod,
                    add_young=param.add_young,
                    smoothing_kernel_y=param.smoothing_kernel_y,
                    SED_type_y=param.SED_type_y,
                    SED_IMF_y=param.SED_IMF_y,
                    SED_res_y=param.SED_res_y,
+                   SED_pah_y=param.SED_pah_y,   
+                   SED_type_original_y=param.SED_type_original_y,
+                   f_conv_y=param.f_conv_y,
+                   lya_disp_y=param.lya_disp_y,
+                   lya_shape_y=param.lya_shape_y,
                    forceScattering=param.forceScattering,
                    minWeightReduction=param.minWeightReduction,
                    minScattEvents=param.minScattEvents,
                    pathLengthBias=param.pathLengthBias,
+                   explicitAbsorption=param.explicitAbsorption,
+                   lyaAccelerationScheme=param.lyaAccelerationScheme,
+                   lyaAccelerationStrength=param.lyaAccelerationStrength,
+                   includeHubbleFlow=param.includeHubbleFlow,
+                   maxTemperature_lya=param.maxTemperature_lya,
+                   defaultTemperature=param.defaultTemperature,
+                   includePolarization=param.includePolarization,
+                   dustEmissionOptions=param.dustEmissionOptions,
+                   dustemtype=param.dustemtype, 
                    storeRadiationField=param.storeRadiationField,
                    radfield_type=param.radfield_type,
                    radfield_unit=param.radfield_unit,
@@ -175,6 +274,7 @@ def make_INSKI(
                    N_Si=param.N_Si,
                    N_C=param.N_C,
                    N_PAH=param.N_PAH,
+                   add_pah=param.add_pah,
                    on_the_fly_dust=param.on_the_fly_dust,
                    minSize=param.minSize, #[cm]
                    maxSize=param.maxSize,
@@ -206,6 +306,8 @@ def make_INSKI(
                    maxGasFraction=param.maxGasFraction,
                    def_wv_grid=param.def_wv_grid,
                    includeGALEX=param.includeGALEX,
+                   includejohnson=param.includejohnson,
+                   includespitzer=param.includespitzer,
                    includeSDSS=param.includeSDSS,
                    include2MASS=param.include2MASS,
                    includeWISE=param.includeWISE,
@@ -245,6 +347,7 @@ def make_INSKI(
                    inst_2d_sed_repo=param.inst_2d_sed_repo,
                    inst_2d_sed_fname=param.inst_2d_sed_fname,
                    inst_2d_sed_relHW=param.inst_2d_sed_relHW,
+                   inst_1d_sed_only=param.inst_1d_sed_only,
                    save_1d_sed=param.save_1d_sed,
                    aperture_unit=param.aperture_unit, 
                    aperture_min=param.aperture_min, 
@@ -258,6 +361,8 @@ def make_INSKI(
                    inst_sed_min_wv_sub=param.inst_sed_min_wv_sub,
                    inst_sed_max_wv_sub=param.inst_sed_max_wv_sub,
                    inst_sed_N_wv_sub=param.inst_sed_N_wv_sub,
+                   inst_sed_grid_add_band=param.inst_sed_grid_add_band,
+                   visual=param.visual,
                    repo=param.repo,
                    opart_name=param.opart_name,
                    ypart_name=param.ypart_name,
@@ -273,6 +378,12 @@ def make_INSKI(
                 ski_name=param.ski_name,
                 skirt_dir=param.skirt_dir,
                 N_thread=param.N_thread)
+    
+    if param.del_input == True:
+        delete_indat(repo=param.repo,
+                     opart_name=param.opart_name,
+                     ypart_name=param.ypart_name,
+                     gas_name=param.gas_name)
     
     return 
 

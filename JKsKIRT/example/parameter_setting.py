@@ -262,6 +262,7 @@ maxGasFraction = 1e-6
 #@@@ default wvlength grid
 def_wv_grid = 'pre-defined'
 includeGALEX = 'true' # if you want to get 2D GALEX filter image
+includejohnson = 'true' # if you want to get 2D Johnson filter image
 includeSDSS = 'true' # if you want to get 2D SDSS filter image
 include2MASS = 'true' # if you want to get 2D 2MASS filter image
 includeWISE = 'true' # if you want to get 2D WISE filter image

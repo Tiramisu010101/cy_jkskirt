@@ -46,6 +46,11 @@ def writing_ski(
                SED_type_o='BC03',
                SED_IMF_o='Chabrier',
                SED_res_o='High',
+               SED_pah_o='High',   
+               SED_type_original_o='BPASS',
+               f_conv_o=0.68,
+               lya_disp_o=50,
+               lya_shape_o='gaussian',
                
                #@@@ young particles
                add_young=False,
@@ -53,13 +58,30 @@ def writing_ski(
                SED_type_y='BC03',
                SED_IMF_y='Chabrier',
                SED_res_y='High',
+               SED_pah_y='High',   
+               SED_type_original_y='BPASS',
+               f_conv_y=0.68,
+               lya_disp_y=50,
+               lya_shape_y='gaussian',
+               tod_sedtemplate='BPASSChab300Bin',
+               tod_includedust='true',
+               tod_sfrperiod='Period10Myr',
                
-
                #!!! Medium System
                forceScattering='true',
                minWeightReduction=1e4,
                minScattEvents=0,
                pathLengthBias=0.5,
+    
+               explicitAbsorption='false',
+               lyaAccelerationScheme='Variable',
+               lyaAccelerationStrength=1,
+               includeHubbleFlow='false',
+               maxTemperature_lya=2e4,
+               defaultTemperature=1e4,
+               includePolarization='false',
+               dustEmissionOptions='false',
+               dustemtype='Equilibrium',
                
                storeRadiationField='true',
                radfield_type='log',
@@ -84,7 +106,7 @@ def writing_ski(
                N_Si=8,
                N_C=8,
                N_PAH=8,
-               
+               add_pah=False,
                on_the_fly_dust=False,
                minSize=1e-7, #[cm]
                maxSize=1e-4,
@@ -125,6 +147,8 @@ def writing_ski(
                #@@@ default wvlength grid
                def_wv_grid='pre-defined',
                includeGALEX='true',
+               includejohnson='true',
+               includespitzer='true',
                includeSDSS='true',
                include2MASS='true',
                includeWISE='false',
@@ -165,6 +189,7 @@ def writing_ski(
                centre_Y=0,
 
                #@@@!!! SEDInstrument
+               inst_1d_sed_only=False,
                save_1d_sed=True,
                aperture_unit='kpc', 
                aperture_min=5, 
@@ -176,6 +201,7 @@ def writing_ski(
                inst_sed_min_wv=0.1,
                inst_sed_max_wv=1000,
                inst_sed_N_wv=5000,
+               inst_sed_grid_add_band=False,
                
                ### only activated when you choose nestedlog for the inst_sed_grid_type
                inst_sed_min_wv_sub = 0.4,
@@ -200,7 +226,7 @@ def writing_ski(
                inst_2d_sed_repo='./',
                inst_2d_sed_fname='inst_2d_sed.txt',
                inst_2d_sed_relHW=0,
-    
+               visual = False,
 
                #!!! Basic Info
                repo='/home/jangjk/',
@@ -224,7 +250,8 @@ def writing_ski(
                       H_0=H_0,
                       Om_m=Om_m,
                       indent=indent,
-                      indent_base=0
+                      indent_base=0,
+                      mode=mode
                       )
     
     
@@ -255,78 +282,92 @@ def writing_ski(
                                   sed_type_young=SED_type_y,
                                   sed_imf_young=SED_IMF_y,
                                   sed_res_young=SED_res_y,
+                                  sed_pahfraction_young=SED_pah_y,
+                                  tod_sedtemplate=tod_sedtemplate,
+                                  tod_includedust=tod_includedust,
+                                  tod_sfrperiod=tod_sfrperiod,
                                   indent=indent,
                                   indent_base=N_idt
                                   )
     
     
-    N_idt = Medium.Medium_System(wfile=wfile,
-                                  forceScattering=forceScattering,
-                                  minWeightReduction=minWeightReduction,
-                                  minScattEvents=minScattEvents,
-                                  pathLengthBias=pathLengthBias,
-                                  storeRadiationField=storeRadiationField,
-                                  radfield_type=radfield_type,
-                                  radfield_unit=radfield_unit,
-                                  radfield_min_wv=radfield_min_wv,
-                                  radfield_max_wv=radfield_max_wv,
-                                  radfield_N_wv=radfield_N_wv,
-                                  gas_fbase=repo,
-                                  gas_fname=gas_name,
-                                  med_type=med_type,
-                                  med_Mfrac=med_Mfrac,
-                                  importMetallicity=importMetallicity,
-                                  importTemperature=importTemperature,
-                                  maxTemperature=maxTemperature,
-                                  importVelocity=importVelocity_med,
-                                  importMagneticField=importMagneticField,
-                                  importVariableMixParams=importVariableMixParams,
-                                  smoothing_kernel=smoothing_kernel_med,
-                                  Dust_Type=Dust_Type,
-                                  Dust_Env=Dust_Env,
-                                  N_Si=N_Si,
-                                  N_C=N_C,
-                                  N_PAH=N_PAH,
-                                 
-                                  on_the_fly_dust=on_the_fly_dust,
-                                  minSize=minSize,
-                                  maxSize=maxSize,
-                                  centroid_small=centroid_small,
-                                  width_small=width_small,
-                                  centroid_large=centroid_large,
-                                  width_large=width_large,
+    if mode in ['transparent','trans','nomedium','noext','no extinction','without extinction']:
+        pass
 
-                                  numDensitySamples=numDensitySamples,
-                                  numPropertySamples=numPropertySamples,
-                                  aggregateVelocity=aggregateVelocity,
-                                  grid_unit=grid_unit,
-                                  grid_minX=grid_minX,
-                                  grid_maxX=grid_maxX,
-                                  grid_minY=grid_minY,
-                                  grid_maxY=grid_maxY,
-                                  grid_minZ=grid_minZ,
-                                  grid_maxZ=grid_maxZ,
-                                  Tree_Type=Tree_Type,
-                                  Tree_Policy=Tree_Policy,
-                                  minLevel=minLevel,
-                                  maxLevel=maxLevel,
-                                  numExtraLevels=numExtraLevels,
-                                  maxDustFraction=maxDustFraction,
-                                  maxDustOpticalDepth=maxDustOpticalDepth,
-                                  grid_wv_test_unit=grid_wv_test_unit,
-                                  grid_wv_test=grid_wv_test,
-                                  maxDustDensityDispersion=maxDustDensityDispersion,
-                                  maxElectronFraction=maxElectronFraction,
-                                  maxGasFraction=maxGasFraction,
-                                  indent=indent,
-                                  indent_base=N_idt
-                                  )
+    else:
+        N_idt = Medium.Medium_System(wfile=wfile,
+                                    forceScattering=forceScattering,
+                                    minWeightReduction=minWeightReduction,
+                                    minScattEvents=minScattEvents,
+                                    pathLengthBias=pathLengthBias,
+                                    dustEmissionOptions=dustEmissionOptions,
+                                    dustemtype=dustemtype,
+                                    storeRadiationField=storeRadiationField,
+                                    radfield_type=radfield_type,
+                                    radfield_unit=radfield_unit,
+                                    radfield_min_wv=radfield_min_wv,
+                                    radfield_max_wv=radfield_max_wv,
+                                    radfield_N_wv=radfield_N_wv,
+                                    gas_fbase=repo,
+                                    gas_fname=gas_name,
+                                    med_type=med_type,
+                                    med_Mfrac=med_Mfrac,
+                                    importMetallicity=importMetallicity,
+                                    importTemperature=importTemperature,
+                                    maxTemperature=maxTemperature,
+                                    importVelocity=importVelocity_med,
+                                    importMagneticField=importMagneticField,
+                                    importVariableMixParams=importVariableMixParams,
+                                    smoothing_kernel=smoothing_kernel_med,
+                                    Dust_Type=Dust_Type,
+                                    Dust_Env=Dust_Env,
+                                    N_Si=N_Si,
+                                    N_C=N_C,
+                                    N_PAH=N_PAH,
+                                    
+                                    add_pah=add_pah,
+                                    
+                                    on_the_fly_dust=on_the_fly_dust,
+                                    minSize=minSize,
+                                    maxSize=maxSize,
+                                    centroid_small=centroid_small,
+                                    width_small=width_small,
+                                    centroid_large=centroid_large,
+                                    width_large=width_large,
+
+                                    numDensitySamples=numDensitySamples,
+                                    numPropertySamples=numPropertySamples,
+                                    aggregateVelocity=aggregateVelocity,
+                                    grid_unit=grid_unit,
+                                    grid_minX=grid_minX,
+                                    grid_maxX=grid_maxX,
+                                    grid_minY=grid_minY,
+                                    grid_maxY=grid_maxY,
+                                    grid_minZ=grid_minZ,
+                                    grid_maxZ=grid_maxZ,
+                                    Tree_Type=Tree_Type,
+                                    Tree_Policy=Tree_Policy,
+                                    minLevel=minLevel,
+                                    maxLevel=maxLevel,
+                                    numExtraLevels=numExtraLevels,
+                                    maxDustFraction=maxDustFraction,
+                                    maxDustOpticalDepth=maxDustOpticalDepth,
+                                    grid_wv_test_unit=grid_wv_test_unit,
+                                    grid_wv_test=grid_wv_test,
+                                    maxDustDensityDispersion=maxDustDensityDispersion,
+                                    maxElectronFraction=maxElectronFraction,
+                                    maxGasFraction=maxGasFraction,
+                                    indent=indent,
+                                    indent_base=N_idt
+                                    )
                
 
     N_idt = Instrument.Inst_System(
                                    wfile=wfile,
                                    def_wv_grid=def_wv_grid,
                                    includeGALEX=includeGALEX,
+                                   includejohnson=includejohnson,
+                                   includespitzer=includespitzer,
                                    includeSDSS=includeSDSS,
                                    include2MASS=include2MASS,
                                    includeWISE=includeWISE,
@@ -364,7 +405,6 @@ def writing_ski(
                                    inst_sed_min_wv=inst_sed_min_wv,
                                    inst_sed_max_wv=inst_sed_max_wv,
                                    inst_sed_N_wv=inst_sed_N_wv,
-        
                                    inst_sed_min_wv_sub = inst_sed_min_wv_sub,
                                    inst_sed_max_wv_sub = inst_sed_max_wv_sub,
                                    inst_sed_N_wv_sub = inst_sed_N_wv_sub,
@@ -381,7 +421,7 @@ def writing_ski(
                                    inst_2d_sed_repo=inst_2d_sed_repo,
                                    inst_2d_sed_fname=inst_2d_sed_fname,
                                    inst_2d_sed_relHW=inst_2d_sed_relHW,
-
+                                   visual = visual,
                                    indent=indent,
                                    indent_base=N_idt
                                     )

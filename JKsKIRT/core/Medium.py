@@ -21,6 +21,8 @@ def Medium_System(wfile,
                   radfield_max_wv,
                   radfield_N_wv,
                   
+                  dustEmissionOptions,
+                  dustemtype,
                   gas_fbase,
                   gas_fname,
                   
@@ -39,6 +41,7 @@ def Medium_System(wfile,
                   N_Si,
                   N_C,
                   N_PAH,
+                  add_pah,
                   
                   on_the_fly_dust,
                   minSize,
@@ -96,10 +99,30 @@ def Medium_System(wfile,
             print((N_idt+5)*indent+'<LinWavelengthGrid minWavelength="%s %s" maxWavelength="%s %s" numWavelengths="%s"/>'%(radfield_min_wv,radfield_unit,radfield_max_wv,radfield_unit,radfield_N_wv),file=wfile)
         
         print((N_idt+4)*indent+'</radiationFieldWLG>',file=wfile)
-            
+
+
     print((N_idt+3)*indent+'</RadiationFieldOptions>',file=wfile)
     print((N_idt+2)*indent+'</radiationFieldOptions>',file=wfile)    
     
+    if dustEmissionOptions == 'true':
+        print((N_idt+2)*indent+'<secondaryEmissionOptions type="SecondaryEmissionOptions">',file=wfile)
+        print((N_idt+3)*indent+'<SecondaryEmissionOptions storeEmissionRadiationField="false" secondaryPacketsMultiplier="1" spatialBias="0.5" sourceBias="0.5"/>',file=wfile)
+        print((N_idt+2)*indent+'</secondaryEmissionOptions>',file=wfile)
+        print((N_idt+2)*indent+'<dustEmissionOptions type="DustEmissionOptions">',file=wfile)
+        print((N_idt+3)*indent+'<DustEmissionOptions dustEmissionType="%s" includeHeatingByCMB="true" maxFractionOfPrimary="0.01" maxFractionOfPrevious="0.03" sourceWeight="1" wavelengthBias="0.5">'%(dustemtype),file=wfile)
+        print((N_idt+4)*indent+'<cellLibrary type="SpatialCellLibrary">',file=wfile)
+        print((N_idt+5)*indent+'<AllCellsLibrary/>',file=wfile)
+        print((N_idt+4)*indent+'</cellLibrary>',file=wfile)
+        print((N_idt+4)*indent+'<dustEmissionWLG type="DisjointWavelengthGrid">',file=wfile)
+        # print((N_idt+5)*indent+'<LogWavelengthGrid minWavelength="1 micron" maxWavelength="2000 micron" numWavelengths="1000"/>',file=wfile)
+        print((N_idt+5)*indent+'<NestedLogWavelengthGrid minWavelengthBaseGrid="1 micron" maxWavelengthBaseGrid="2000 micron" numWavelengthsBaseGrid="100" minWavelengthSubGrid="2 micron" maxWavelengthSubGrid="25 micron" numWavelengthsSubGrid="400"/>',file=wfile)
+        print((N_idt+4)*indent+'</dustEmissionWLG>',file=wfile)
+        print((N_idt+4)*indent+'<wavelengthBiasDistribution type="WavelengthDistribution">',file=wfile)
+        print((N_idt+5)*indent+'<DefaultWavelengthDistribution/>',file=wfile)
+        print((N_idt+4)*indent+'</wavelengthBiasDistribution>',file=wfile)
+        print((N_idt+3)*indent+'</DustEmissionOptions>',file=wfile)
+        print((N_idt+2)*indent+'</dustEmissionOptions>',file=wfile)
+
     print((N_idt+2)*indent+'<media type="Medium">',file=wfile)
 
     if med_type == 'particle':
@@ -203,6 +226,45 @@ def Medium_System(wfile,
             print((N_idt+5)*indent+'</ConfigurableDustMix>',file=wfile)
             print((N_idt+4)*indent+'</materialMix>',file=wfile) 
             print((N_idt+3)*indent+'</CellMedium>',file=wfile)
+            
+            if add_pah == True:
+                print((N_idt+3)*indent+'<CellMedium filename="%s/%s" massType="MassDensity" massFraction="1" importMetallicity="false" importTemperature="false" maxTemperature="0 K" importVelocity="%s" importMagneticField="%s" importVariableMixParams="%s" useColumns="x-min,y-min,z-min,x-max,y-max,z-max,pah neutral density">'%(gas_fbase,gas_fname,importVelocity,importMagneticField,importVariableMixParams),file=wfile)
+                print((N_idt+4)*indent+'<materialMix type="MaterialMix">',file=wfile)
+                print((N_idt+5)*indent+'<ConfigurableDustMix scatteringType="HenyeyGreenstein">',file=wfile)
+                print((N_idt+6)*indent+'<populations type="GrainPopulation">',file=wfile)
+                print((N_idt+7)*indent+'<GrainPopulation numSizes="%s" normalizationType="FactorOnSizeDistribution" factorOnSizeDistribution="1">'%(N_PAH),file=wfile)
+                print((N_idt+8)*indent+'<composition type="GrainComposition">',file=wfile)
+                print((N_idt+9)*indent+'<DraineNeutralPAHGrainComposition/>',file=wfile)
+                print((N_idt+8)*indent+'</composition>',file=wfile)
+                print((N_idt+8)*indent+'<sizeDistribution type="GrainSizeDistribution">',file=wfile)
+                print((N_idt+9)*indent+'<ZubkoPAHGrainSizeDistribution/>',file=wfile)
+                print((N_idt+8)*indent+'</sizeDistribution>',file=wfile)
+                print((N_idt+7)*indent+'</GrainPopulation>',file=wfile)
+                print((N_idt+6)*indent+'</populations>',file=wfile)
+                print((N_idt+5)*indent+'</ConfigurableDustMix>',file=wfile)
+                print((N_idt+4)*indent+'</materialMix>',file=wfile) 
+                print((N_idt+3)*indent+'</CellMedium>',file=wfile)
+
+                print((N_idt+3)*indent+'<CellMedium filename="%s/%s" massType="MassDensity" massFraction="1" importMetallicity="false" importTemperature="false" maxTemperature="0 K" importVelocity="%s" importMagneticField="%s" importVariableMixParams="%s" useColumns="x-min,y-min,z-min,x-max,y-max,z-max,pah ionized density">'%(gas_fbase,gas_fname,importVelocity,importMagneticField,importVariableMixParams),file=wfile)
+                print((N_idt+4)*indent+'<materialMix type="MaterialMix">',file=wfile)
+                print((N_idt+5)*indent+'<ConfigurableDustMix scatteringType="HenyeyGreenstein">',file=wfile)
+                print((N_idt+6)*indent+'<populations type="GrainPopulation">',file=wfile)
+                print((N_idt+7)*indent+'<GrainPopulation numSizes="%s" normalizationType="FactorOnSizeDistribution" factorOnSizeDistribution="1">'%(N_PAH),file=wfile)
+                print((N_idt+8)*indent+'<composition type="GrainComposition">',file=wfile)
+                print((N_idt+9)*indent+'<DraineIonizedPAHGrainComposition/>',file=wfile)
+                print((N_idt+8)*indent+'</composition>',file=wfile)
+                print((N_idt+8)*indent+'<sizeDistribution type="GrainSizeDistribution">',file=wfile)
+                print((N_idt+9)*indent+'<ZubkoPAHGrainSizeDistribution/>',file=wfile)
+                print((N_idt+8)*indent+'</sizeDistribution>',file=wfile)
+                print((N_idt+7)*indent+'</GrainPopulation>',file=wfile)
+                print((N_idt+6)*indent+'</populations>',file=wfile)
+                print((N_idt+5)*indent+'</ConfigurableDustMix>',file=wfile)
+                print((N_idt+4)*indent+'</materialMix>',file=wfile) 
+                print((N_idt+3)*indent+'</CellMedium>',file=wfile)
+
+
+
+
                   
     print((N_idt+2)*indent+'</media>',file=wfile)
 
