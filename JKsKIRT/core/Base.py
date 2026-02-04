@@ -21,7 +21,7 @@ def Start(wfile,
     print((N_idt)*indent+"<!-- A SKIRT parameter file © Astronomical Observatory, Ghent University -->",file=wfile)
     print((N_idt)*indent+'<skirt-simulation-hierarchy type="MonteCarloSimulation" format="9" producer="Python toolkit for SKIRT (SkiFile class)" time="2020-05-21T15:04:51">',file=wfile)
     if mode == 'DustEmission':
-        print((N_idt+1)*indent+'<MonteCarloSimulation userLevel="Expert" simulationMode="DustEmission" iteratePrimaryEmission="false" iterateSecondaryEmission="false" numPackets="%s">'%(N_phot),file=wfile)
+        print((N_idt+1)*indent+'<MonteCarloSimulation userLevel="Expert" simulationMode="DustEmission" iteratePrimaryEmission="false" iterateSecondaryEmission="true" numPackets="%s">'%(N_phot),file=wfile)
     elif mode == 'trans':
         print((N_idt+1)*indent+'<MonteCarloSimulation userLevel="Expert" simulationMode="NoMedium" numPackets="%s">'%(N_phot),file=wfile)
     else:
