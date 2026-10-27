@@ -169,7 +169,8 @@ def Toddlers(wfile,
              stellartemplate,
              includedust,
              resolution,
-             sfrperiod
+             sfrperiod,
+             todsedMode='SFRNormalized'
              ):
     
     # if pahfraction == 'high':
@@ -184,7 +185,7 @@ def Toddlers(wfile,
     N_idt = indent_base
 
     print((N_idt)*indent+'<sedFamily type="SEDFamily">',file=wfile)
-    print((N_idt+1)*indent+'<ToddlersSEDFamily sedMode="SFRNormalized" stellarTemplate="%s" includeDust="%s" resolution="%s" sfrPeriod="%s"/>'%(stellartemplate,includedust,resolution,sfrperiod),file=wfile)
+    print((N_idt+1)*indent+'<ToddlersSEDFamily sedMode="%s" stellarTemplate="%s" includeDust="%s" resolution="%s" sfrPeriod="%s"/>'%(todsedMode,stellartemplate,includedust,resolution,sfrperiod),file=wfile)
     print((N_idt)*indent+'</sedFamily>',file=wfile)
     return N_idt
 

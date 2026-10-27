@@ -1,6 +1,4 @@
 import numpy as np
-#import rur
-#from rur import uri, drawer, utool, uhmi, sci
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -168,7 +166,9 @@ def make_input(
            mPAHneu = [],
            mPAHion = [],
 
-           torrey_fdust=0.14
+           torrey_fdust=0.14,
+           todsedMode='SFRNormalized',
+           fdust=None
            ):
     
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -385,10 +385,6 @@ def make_input(
             sig_s_ind = 7
             m_s_ind, metal_s_ind, age_s_ind = 8, 9, 10
 
-        # if add_young == True:
-        #     sort = (Age_Cut<=abs(age_s))
-        # else:
-        #     sort = (0<abs(age_s))
         sort = (Age_Cut<=abs(age_s)) 
 
         old_arr = np.empty((len(x_s[sort]), old_arr_len))
@@ -475,7 +471,6 @@ def make_input(
             
         elif SED_type_y == 'mappings':
             #!!! linear regression for the parameter space. 
-            #!!! If you want to apply your model, try.
             a_prs, b_prs, c_prs = 0.4, 10, -8.86
             a_cpt, b_cpt, c_cpt = 0.25, 10, 6.5
             t_clr = 0.003 #[Gyr]
@@ -543,67 +538,32 @@ def make_input(
                 young_arr, delimiter=' ', newline='\n', header=header, footer='', comments='# ', encoding=None)
     
         elif SED_type_y in ['Toddlers','toddlers','TODDLERS']:
-            #!!! linear regression for the parameter space. 
-            #!!! If you want to apply your model, try.
-            
-            x_s_ind, y_s_ind, z_s_ind = 0, 1, 2
-            dx_s_ind = 3 
-            # age_s_ind, metal_s_ind, sfe_s_ind, cnd_s_ind, m_s_ind = 4, 5, 6, 7, 8
-            metal_s_ind, sfe_s_ind, cnd_s_ind, sfr_s_ind = 4,5,6,7
-            young_arr_len = 8
+            sort = (Age_Cut > age_s)
+            columns = [x_s[sort], y_s[sort], z_s[sort],
+                       np.full(np.count_nonzero(sort), dx_s_y)]
+            labels = ["position x (kpc)", "position y (kpc)",
+                      "position z (kpc)", "smoothing length (pc)"]
             if import_velocity == 'true':
-                young_arr_len += 3
-                vx_s_ind, vy_s_ind, vz_s_ind = 4, 5, 6
-                age_s_ind, metal_s_ind, sfe_s_ind, cnd_s_ind, m_s_ind = 7, 8, 9, 10, 11
-    
+                columns.extend([vx_s[sort], vy_s[sort], vz_s[sort]])
+                labels.extend(["velocity x (km/s)", "velocity y (km/s)", "velocity z (km/s)"])
             if import_dispersion == 'true':
-                young_arr_len += 1
-                sig_s_ind = 7
-                age_s_ind, metal_s_ind, sfe_s_ind, cnd_s_ind, m_s_ind = 8, 9, 10, 11, 12
-            
-            #!!!!!
-            
-            sort = (Age_Cut>age_s)
-            young_arr = np.empty((len(x_s[sort]), young_arr_len))
+                columns.append(np.full(np.count_nonzero(sort), sig_s))
+                labels.append("velocity dispersion (km/s)")
+            columns.extend([metal_s[sort], sfe_s[sort], cnd_s[sort]])
+            labels.extend(["metallicity (1)", "star formation efficiency (1)",
+                           "cloud number density (1/cm3)"])
+            if todsedMode == 'SFRNormalizedVariableDust':
+                # fdust is supplied directly by the caller.
+                columns.append(np.full(np.count_nonzero(sort), fdust)
+                               if np.ndim(fdust) == 0 else np.asarray(fdust)[sort])
+                labels.append("grain abundance scaling factor (1)")
+            columns.append(m0_s[sort] / (Age_Cut * 1e9))
+            labels.append("star formation rate (Msun/yr)")
+            young_arr = np.column_stack(columns)
+            header = "\n".join("Column %s: %s" % (i + 1, label)
+                               for i, label in enumerate(labels))
+            np.savetxt(young_fbase + young_fname, young_arr, header=header)
 
-            young_arr[:,x_s_ind] = x_s[sort]
-            young_arr[:,y_s_ind] = y_s[sort]
-            young_arr[:,z_s_ind] = z_s[sort]
-            young_arr[:,dx_s_ind] = np.ones(len(x_s[sort]))*dx_s_y
-            if import_velocity == 'true':
-                young_arr[:,vx_s_ind] = vx_s[sort]
-                young_arr[:,vy_s_ind] = vy_s[sort]
-                young_arr[:,vz_s_ind] = vz_s[sort]
-            if import_dispersion == 'true':
-                young_arr[:,sig_s_ind] = np.ones(len(x_s[sort]))*sig_s
-            # young_arr[:,age_s_ind] = age_s[sort]
-            young_arr[:,metal_s_ind] = metal_s[sort]
-            young_arr[:,sfe_s_ind] = sfe_s[sort]
-            young_arr[:,cnd_s_ind] = cnd_s[sort]
-            # young_arr[:,m_s_ind] = m0_s[sort]
-            # young_arr[:,sfr_s_ind] = sfr_s[sort]
-            young_arr[:,sfr_s_ind] = m0_s[sort]/(30*1e6) # 편의를 위해 30으로 고정했습니다.
-            header = "Column %s: position x (kpc)\n" %(x_s_ind+1)
-            header += "Column %s: position y (kpc)\n" %(y_s_ind+1)
-            header += "Column %s: position z (kpc)\n" %(z_s_ind+1)
-            header += "Column %s: smoothing length (pc)\n" %(dx_s_ind+1)
-            if import_velocity == 'true':
-                header += "Column %s: velocity x (km/s)\n" %(vx_s_ind+1)
-                header += "Column %s: velocity y (km/s)\n" %(vy_s_ind+1)
-                header += "Column %s: velocity z (km/s)\n" %(vz_s_ind+1)
-            if import_dispersion == 'true':
-                header += "Column %s: velocity dispersion (km/s)\n" %(sig_s_ind+1)
-            # header += "Column %s: age (Gyr)\n" %(age_s_ind+1)
-            header += "Column %s: metallicity (1)\n" %(metal_s_ind+1)
-            header += "Column %s: star formation efficiency (1)\n" %(sfe_s_ind+1)
-            header += "Column %s: cloud number density (1/cm3)\n" %(cnd_s_ind+1)
-            header += "Column %s: star formation rate (Msun/yr)\n"%(sfr_s_ind+1)
-            # header += "Column %s: mass (Msun)\n" %(m_s_ind+1)
-
-            np.savetxt(
-                young_fbase+young_fname,
-                young_arr, delimiter=' ', newline='\n', header=header, footer='', comments='# ', encoding=None)
-    
         print("done -- writing young population")
     
     #!!! For gas cells
@@ -800,6 +760,8 @@ def make_input0(
                 adaptive_smoothing=False,
                 n_targ_nbr=5,
                 n_job_smoothing=32,
+                todsedMode='SFRNormalized',
+                fdust=None,
                 ):
     
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1085,6 +1047,33 @@ def make_input0(
                 young_fbase+young_fname,
                 young_arr, delimiter=' ', newline='\n', header=header, footer='', comments='# ', encoding=None)
     
+        elif SED_type_y.lower() == 'toddlers' and todsedMode == 'SFRNormalizedVariableDust':
+            sort = (Age_Cut > age_s)
+            columns = [x_s[sort], y_s[sort], z_s[sort],
+                       np.full(np.count_nonzero(sort), dx_s_y)]
+            labels = ["position x (kpc)", "position y (kpc)",
+                      "position z (kpc)", "smoothing length (pc)"]
+            if import_velocity == 'true':
+                columns.extend([vx_s[sort], vy_s[sort], vz_s[sort]])
+                labels.extend(["velocity x (km/s)", "velocity y (km/s)", "velocity z (km/s)"])
+            if import_dispersion == 'true':
+                columns.append(np.full(np.count_nonzero(sort), sig_s))
+                labels.append("velocity dispersion (km/s)")
+            columns.extend([metal_s[sort], sfe_s[sort], cnd_s[sort]])
+            labels.extend(["metallicity (1)", "star formation efficiency (1)",
+                           "cloud number density (1/cm3)"])
+            if todsedMode == 'SFRNormalizedVariableDust':
+                # fdust is supplied directly by the caller.
+                columns.append(np.full(np.count_nonzero(sort), fdust)
+                               if np.ndim(fdust) == 0 else np.asarray(fdust)[sort])
+                labels.append("grain abundance scaling factor (1)")
+            columns.append(m0_s[sort] / (Age_Cut * 1e9))
+            labels.append("star formation rate (Msun/yr)")
+            young_arr = np.column_stack(columns)
+            header = "\n".join("Column %s: %s" % (i + 1, label)
+                               for i, label in enumerate(labels))
+            np.savetxt(young_fbase + young_fname, young_arr, header=header)
+
         elif SED_type_y in ['Toddlers','toddlers','TODDLERS']:
             #!!! linear regression for the parameter space. 
             #!!! If you want to apply your model, try.

@@ -42,7 +42,8 @@ def Source_System(wfile,
                   tod_sfrperiod,
 
                   indent,
-                  indent_base
+                  indent_base,
+                  todsedMode='SFRNormalized'
                   ):
                   
     N_idt = indent_base
@@ -140,7 +141,8 @@ def Source_System(wfile,
                                         stellartemplate=tod_sedtemplate,
                                         includedust=tod_includedust,
                                         resolution=sed_res_young,
-                                        sfrperiod=tod_sfrperiod)
+                                        sfrperiod=tod_sfrperiod,
+                                        todsedMode=todsedMode)
 
         dummy = Base.Wave_Bias(wfile=wfile,
                                bias_type=bias_type,

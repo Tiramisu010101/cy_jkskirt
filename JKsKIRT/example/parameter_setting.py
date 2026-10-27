@@ -165,6 +165,11 @@ SED_type_y = 'mappings' # available option is 'BC03' and 'mappings',
                         # but probably I'll add the rest of the SED families.
 SED_IMF_y = 'Chabrier'
 SED_res_y = 'High'
+todsedMode = 'SFRNormalized' # TODDLERS sedMode; input columns must match the selected mode.
+# For variable dust: SED_type_y='Toddlers', add_young=True,
+# todsedMode='SFRNormalizedVariableDust', tod_sedtemplate='BPASSChab100Bin'.
+fdust = None # Required for VariableDust: scalar or 1D array aligned with all input stars.
+
 
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
@@ -179,6 +184,21 @@ forceScattering = 'true' # With or without forced scattering.
 minWeightReduction = 1e4
 minScattEvents = 0
 pathLengthBias = 0.5
+
+# Dust emission options (used when dustEmissionOptions is 'true').
+includeHeatingByCMB = 'true' # Set to 'false' to disable CMB heating.
+maxFractionOfPrimary = 0.01
+maxFractionOfPrevious = 0.03
+
+# Dust emission wavelength grid (used when dustEmissionOptions is 'true').
+# Base and subgrid bounds use dustem_grid_unit; N_wv values are grid counts.
+dustem_grid_unit = 'micron'
+dustem_min_wv = 1
+dustem_max_wv = 10000
+dustem_N_wv = 100
+dustem_min_wv_sub = 2
+dustem_max_wv_sub = 25
+dustem_N_wv_sub = 400
 
 storeRadiationField = 'false' # storeRadiationField can be important in some cases. 
                             # However, if you don't use secondary emission, dont' mind.

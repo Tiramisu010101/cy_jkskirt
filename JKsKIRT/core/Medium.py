@@ -77,7 +77,17 @@ def Medium_System(wfile,
                   maxGasFraction,
 
                   indent,
-                  indent_base
+                  indent_base,
+                  dustem_grid_unit='micron',
+                  dustem_min_wv=1,
+                  dustem_max_wv=10000,
+                  dustem_N_wv=100,
+                  dustem_min_wv_sub=2,
+                  dustem_max_wv_sub=25,
+                  dustem_N_wv_sub=400,
+                  includeHeatingByCMB='true',
+                  maxFractionOfPrimary=0.01,
+                  maxFractionOfPrevious=0.03
                   ):
     
     N_idt = indent_base
@@ -112,13 +122,13 @@ def Medium_System(wfile,
         print((N_idt+3)*indent+'<IterationOptions minPrimaryIterations="1" maxPrimaryIterations="10" minSecondaryIterations="1" maxSecondaryIterations="10" includePrimaryEmission="true" primaryIterationPacketsMultiplier="1" secondaryIterationPacketsMultiplier="1"/>',file=wfile)
         print((N_idt+2)*indent+'</iterationOptions>',file=wfile)
         print((N_idt+2)*indent+'<dustEmissionOptions type="DustEmissionOptions">',file=wfile)
-        print((N_idt+3)*indent+'<DustEmissionOptions dustEmissionType="%s" includeHeatingByCMB="true" maxFractionOfPrimary="0.01" maxFractionOfPrevious="0.03" sourceWeight="1" wavelengthBias="0.5">'%(dustemtype),file=wfile)
+        print((N_idt+3)*indent+'<DustEmissionOptions dustEmissionType="%s" includeHeatingByCMB="%s" maxFractionOfPrimary="%s" maxFractionOfPrevious="%s" sourceWeight="1" wavelengthBias="0.5">'%(dustemtype,str(includeHeatingByCMB).lower(),maxFractionOfPrimary,maxFractionOfPrevious),file=wfile)
         print((N_idt+4)*indent+'<cellLibrary type="SpatialCellLibrary">',file=wfile)
         print((N_idt+5)*indent+'<AllCellsLibrary/>',file=wfile)
         print((N_idt+4)*indent+'</cellLibrary>',file=wfile)
         print((N_idt+4)*indent+'<dustEmissionWLG type="DisjointWavelengthGrid">',file=wfile)
         # print((N_idt+5)*indent+'<LogWavelengthGrid minWavelength="1 micron" maxWavelength="2000 micron" numWavelengths="1000"/>',file=wfile)
-        print((N_idt+5)*indent+'<NestedLogWavelengthGrid minWavelengthBaseGrid="1 micron" maxWavelengthBaseGrid="10000 micron" numWavelengthsBaseGrid="100" minWavelengthSubGrid="2 micron" maxWavelengthSubGrid="25 micron" numWavelengthsSubGrid="400"/>',file=wfile)
+        print((N_idt+5)*indent+'<NestedLogWavelengthGrid minWavelengthBaseGrid="%s %s" maxWavelengthBaseGrid="%s %s" numWavelengthsBaseGrid="%s" minWavelengthSubGrid="%s %s" maxWavelengthSubGrid="%s %s" numWavelengthsSubGrid="%s"/>'%(dustem_min_wv,dustem_grid_unit,dustem_max_wv,dustem_grid_unit,dustem_N_wv,dustem_min_wv_sub,dustem_grid_unit,dustem_max_wv_sub,dustem_grid_unit,dustem_N_wv_sub),file=wfile)
         print((N_idt+4)*indent+'</dustEmissionWLG>',file=wfile)
         print((N_idt+4)*indent+'<wavelengthBiasDistribution type="WavelengthDistribution">',file=wfile)
         print((N_idt+5)*indent+'<DefaultWavelengthDistribution/>',file=wfile)

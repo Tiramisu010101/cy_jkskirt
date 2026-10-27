@@ -235,10 +235,26 @@ def writing_ski(
                gas_name='gas_cell.txt',
                ski_name='nh_ext.ski',
 
-                indent='    '
+                indent='    ',
+                todsedMode='SFRNormalized',
+                # Dust emission nested logarithmic wavelength grid
+                dustem_grid_unit='micron',
+                dustem_min_wv=1,
+                dustem_max_wv=10000,
+                dustem_N_wv=100,
+                dustem_min_wv_sub=2,
+                dustem_max_wv_sub=25,
+                dustem_N_wv_sub=400,
+                includeHeatingByCMB='true',
+                maxFractionOfPrimary=0.01,
+                maxFractionOfPrevious=0.03
                 ):
     
     
+    if add_young and SED_type_y.lower() == 'toddlers' and todsedMode == 'SFRNormalizedVariableDust':
+        if tod_sedtemplate != 'BPASSChab100Bin':
+            raise ValueError("SFRNormalizedVariableDust requires tod_sedtemplate='BPASSChab100Bin'")
+
     wfile = open(repo+ski_name,'w')
 
     N_idt = Base.Start(wfile=wfile,
@@ -286,6 +302,7 @@ def writing_ski(
                                   tod_sedtemplate=tod_sedtemplate,
                                   tod_includedust=tod_includedust,
                                   tod_sfrperiod=tod_sfrperiod,
+                                  todsedMode=todsedMode,
                                   indent=indent,
                                   indent_base=N_idt
                                   )
@@ -302,6 +319,16 @@ def writing_ski(
                                     pathLengthBias=pathLengthBias,
                                     dustEmissionOptions=dustEmissionOptions,
                                     dustemtype=dustemtype,
+                                    includeHeatingByCMB=includeHeatingByCMB,
+                                    maxFractionOfPrimary=maxFractionOfPrimary,
+                                    maxFractionOfPrevious=maxFractionOfPrevious,
+                                    dustem_grid_unit=dustem_grid_unit,
+                                    dustem_min_wv=dustem_min_wv,
+                                    dustem_max_wv=dustem_max_wv,
+                                    dustem_N_wv=dustem_N_wv,
+                                    dustem_min_wv_sub=dustem_min_wv_sub,
+                                    dustem_max_wv_sub=dustem_max_wv_sub,
+                                    dustem_N_wv_sub=dustem_N_wv_sub,
                                     storeRadiationField=storeRadiationField,
                                     radfield_type=radfield_type,
                                     radfield_unit=radfield_unit,
