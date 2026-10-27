@@ -14,7 +14,10 @@ def Probe_System(
     print((N_idt)*indent+'<probeSystem type="ProbeSystem">',file=wfile)
     print((N_idt+1)*indent+'<ProbeSystem>',file=wfile)
     print((N_idt+2)*indent+'<probes type="Probe">',file=wfile)
-    # print((N_idt+3)*indent+'<ConvergenceCutsProbe probeName="dns" probeAfter="Setup"/>',file=wfile)
+
+
+    
+#     print((N_idt+3)*indent+'<ConvergenceCutsProbe probeName="dns" probeAfter="Setup"/>',file=wfile)
     # print((N_idt+3)*indent+'<DensityProbe probeName="intsdens" aggregation="Type" probeAfter="Setup">',file=wfile)
     # print((N_idt+4)*indent+'<form type="Form">',file=wfile)
     # print((N_idt+5)*indent+'<PlanarCutsForm  minX="-1e4 pc" maxX="1e4 pc" minY="-1e4 pc" maxY="1e4 pc" minZ="-1e4 pc" maxZ="1e4 pc" positionX="0 pc" positionY="0 pc" positionZ="0 pc" numPixelsX="500" numPixelsY="500" numPixelsZ="500"/>',file=wfile)
@@ -29,7 +32,57 @@ def Probe_System(
     # print((N_idt+4)*indent+'<form type="Form">',file=wfile)
     # print((N_idt+5)*indent+'<DefaultCutsForm/>',file=wfile)
     # print((N_idt+4)*indent+'</form>',file=wfile)
+
     # print((N_idt+3)*indent+'</TemperatureProbe>',file=wfile)
+
+
+    # Projected total dust surface-density map
+#     print((N_idt+3)*indent +
+#           '<DensityProbe probeName="dustsigma" '
+#           'aggregation="Type" probeAfter="Setup">',
+#           file=wfile)
+
+#     print((N_idt+4)*indent + '<form type="Form">', file=wfile)
+
+#     print((N_idt+5)*indent +
+#           '<ParallelProjectionForm '
+#           'inclination="0 deg" '
+#           'azimuth="0 deg" '
+#           'roll="0 deg" '
+#           'fieldOfViewX="20 kpc" '
+#           'numPixelsX="200" '
+#           'centerX="0 kpc" '
+#           'fieldOfViewY="20 kpc" '
+#           'numPixelsY="200" '
+#           'centerY="0 kpc" '
+#           'numSampling="1"/>',
+#           file=wfile)
+
+#     print((N_idt+4)*indent + '</form>', file=wfile)
+#     print((N_idt+3)*indent + '</DensityProbe>', file=wfile)
+
+#     print((N_idt+3)*indent +
+#       '<TemperatureProbe probeName="tmp" aggregation="Type" probeAfter="Run">',
+#       file=wfile)
+
+#     print((N_idt+4)*indent + '<form type="Form">', file=wfile)
+
+#     print((N_idt+5)*indent +
+#         '<ParallelProjectionForm '
+#         'inclination="0 deg" '
+#         'azimuth="0 deg" '
+#         'roll="0 deg" '
+#         'fieldOfViewX="20 kpc" '
+#         'numPixelsX="200" '
+#         'centerX="0 kpc" '
+#         'fieldOfViewY="20 kpc" '
+#         'numPixelsY="200" '
+#         'centerY="0 kpc" '
+#         'numSampling="1"/>',
+#         file=wfile)
+
+#     print((N_idt+4)*indent + '</form>', file=wfile)
+#     print((N_idt+3)*indent + '</TemperatureProbe>', file=wfile)
     print((N_idt+2)*indent+'</probes>',file=wfile)
     print((N_idt+1)*indent+'</ProbeSystem>',file=wfile)
     print((N_idt)*indent+'</probeSystem>',file=wfile)

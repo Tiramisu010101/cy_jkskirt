@@ -258,6 +258,52 @@ def make_input(
             new_m_c[ind] = m_c[ind] * metal_c[ind] * torrey_fdust
             m_c = new_m_c
             metal_c = np.ones(len(m_c))
+        elif mtd_mod == 'RR14':
+
+            # -------------------------------------------------
+            # Remy-Ruyer et al. (2014)
+            # metallicity-dependent dust-to-gas ratio
+            #
+            # x = log10(Z / Zsun)
+            #
+            # log10(G/D) = 2.21 - x          (high-Z)
+            #              0.96 - 3.10*x     (low-Z)
+            #
+            # transition:
+            # 12 + log(O/H) = 8.10
+            # assuming solar 12 + log(O/H) = 8.69
+            # -> log10(Z/Zsun) = -0.59
+            # -------------------------------------------------
+
+            Zrel = metal_c / Zsun
+
+            # avoid log10(0) or negative metallicities
+            valid = Zrel > 0.0
+
+            DGR = np.zeros(len(m_c))
+
+            log_Zrel = np.zeros(len(m_c))
+            log_Zrel[valid] = np.log10(Zrel[valid])
+
+            highZ = valid & (log_Zrel > -0.59)
+            lowZ  = valid & (log_Zrel <= -0.59)
+
+            # Gas-to-dust ratio
+            log_GDR = np.zeros(len(m_c))
+
+            log_GDR[highZ] = 2.21 - log_Zrel[highZ]
+            log_GDR[lowZ]  = 0.96 - 3.10 * log_Zrel[lowZ]
+
+            # Convert G/D -> D/G
+            DGR[valid] = 10**(-log_GDR[valid])
+
+            dust_mask = valid
+
+            new_m_c = np.zeros(len(m_c))
+            new_m_c[dust_mask] = m_c[dust_mask] * DGR[dust_mask]
+
+            m_c = new_m_c
+            metal_c = np.ones(len(m_c))
         print("done -- calculating metallicity dependent Dust-to-Gas ratio")
            
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
