@@ -13,7 +13,7 @@ ski_name = 'att_test.ski' # ski file (the parameter file that SKIRT read) will b
 exe_skirt = True # If you want to execute SKIRT after saving the input files 
 del_input = True # If you want to delete the input particle/gaseous files after running SKIRT
 
-skirt_dir = '' # the path where the executable skirt object reside
+skirt_dir = '/home/yuchang/SKIRT/release/SKIRT/main' # the path where the executable skirt object reside
 N_thread = 48 # the number of the thread you want to use
 N_phot = 5e7 # The number of the photon packets
 
@@ -63,7 +63,7 @@ par_mode = 'median' # Simple strategy for calculating net angular momentum from 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#
 
-adaptive_smoothing = False
+adaptive_smoothing = True
 n_targ_nbr = 32
 n_job_smoothing = 20
 
@@ -118,8 +118,8 @@ sig_c = 5 # Assumed velocity dispersion of gaseous particles
 rnd_seed = 12345 # seed number for the random number generator 
                # not an important parameter 
 
-mode = 'extinction' # Simulation mode 
-                    # Possible options: 'extinction'
+mode = 'DustEmission' # Simulation mode 
+                    # Possible options: 'extinction', 'DustAndGasEmission', 'DustEmission'
                     # transparent & secondary radiation options will be updated soon. 
 
 # Output styles for both the wavelength(or frequency) and flux
@@ -163,16 +163,21 @@ SED_IMF_o = 'Chabrier100' # assumed IMF, if chosen SED has an option
 # SED_res_o = 'High' # only applicable for BC03. low-res. has 1200 wvl pts, and high-res has 6900 pts
 SED_res_o = 'Original' # only applicable for BC03. Original and Downsampled
 
-#@@@ young population
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#@@@@@@@@@@@@ young population @@@@@@@@@@@@
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 smoothing_kernel_y = 'cubic' # same with the old population
 SED_type_y = 'Toddlers' # available option is 'BC03', 'mappings', and 'Toddlers',
                         # but probably I'll add the rest of the SED families.
 SED_IMF_y = 'Chabrier'
 SED_res_y = 'High' 
 
+# For TODDLERS template
 tod_sedtemplate = 'BPASSChab100Bin' # Toddlers SED template
 tod_includedust = 'true' # If you want to include the dust emission in Toddler
 tod_sfrperiod = 'Period30Myr' # SFR period for Toddlers SED
+tod_sedMode = 'SFRNormalizedVariableDust'
+fdust = None
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 #@@@@@@@@@@@ setting for the medium system @@@@@@@@@@@@# 
@@ -285,11 +290,11 @@ def_wv_grid = 'pre-defined'
 includeGALEX = 'false' # if you want to get 2D GALEX filter image
 includejohnson = 'false' # if you want to get 2D Johnson filter image
 includespitzer = 'false' # if you want to get 2D Spitzer filter image
-includeSDSS = 'true' # if you want to get 2D SDSS filter image
+includeSDSS = 'false' # if you want to get 2D SDSS filter image
 include2MASS = 'false' # if you want to get 2D 2MASS filter image
 includeWISE = 'false' # if you want to get 2D WISE filter image
 includeHERSCHEL = 'false' # if you want to get 2D HERSCHEL filter image
-# CustomFilterList = []
+CustomFilterList = [] 
 visual = False
 
 inst_dist_unit = 'Mpc' 
@@ -305,7 +310,7 @@ roll_default = 0
 
 #!!! Settings for the observer's POV 
 inc_min = 0 # minimum (observing) inclination 
-inc_max = 90 # maximum inclination
+inc_max = 0 # maximum inclination
 inc_del = 30 # delta inclination
 
 azm_min = 0 # minimum (observing) azimuthal angle 

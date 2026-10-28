@@ -419,6 +419,7 @@ def writing_ski(
                                    pscale_Y=pscale_Y,
                                    centre_X=centre_X,
                                    centre_Y=centre_Y,
+                                   inst_1d_sed_only=inst_1d_sed_only,
                                    save_1d_sed=save_1d_sed,
                                    aperture_unit=aperture_unit, 
                                    aperture_min=aperture_min, 
