@@ -70,6 +70,9 @@ n_job_smoothing = 20
 add_young = True # If you want to separate the young stellar particles from the old population
                # If not True, then all the stellar particles will be 
 
+Age_Cut = 0.01 # Demarcation cut for the separation
+               # Unit: [Gyr]
+
 dx_s_o = 70   # This is a smoothing length of each stellar particle
               # When we put the data into SKIRT, we treated the stellar particle as an smoothed particle data  
               # Unit: [parsec]
@@ -87,8 +90,6 @@ import_dispersion = 'false' # If you want to assume the velocity dispersion insi
 sig_s = 10 # Assumed velocity dispersion of stellar particles
            # Unit: [km/s]
 
-Age_Cut = 0.03 # Demarcation cut for the separation
-               # Unit: [Gyr]
 
     
 # When we dealing with the gaseous cells,
@@ -136,7 +137,7 @@ Om_m = 0.31 # assumed matter density
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 
 source_unit = 'micron' # unit of the radiated source SED
-wv_source_min = 0.001 # minimum wavelength of the source SED
+wv_source_min = 0.0001 # minimum wavelength of the source SED
 wv_source_max = 2000 # maximum "
 wv_source_del = 0.01 # Delta(Wvl) 
 
@@ -145,7 +146,7 @@ wv_source_del = 0.01 # Delta(Wvl)
 source_bias = 0.5 
 bias_type = 'log'
 bias_unit = 'micron' 
-wv_bias_min = 0.001 
+wv_bias_min = 0.0001 
 wv_bias_max = 2000 
 source_weight = 1 
 bias_deg = 0.5 
@@ -175,9 +176,10 @@ SED_res_y = 'High'
 # For TODDLERS template
 tod_sedtemplate = 'BPASSChab100Bin' # Toddlers SED template
 tod_includedust = 'true' # If you want to include the dust emission in Toddler
-tod_sfrperiod = 'Period30Myr' # SFR period for Toddlers SED
-tod_sedMode = 'SFRNormalizedVariableDust'
+tod_sfrperiod = 'Period10Myr' # SFR period for Toddlers SED
+todsedMode = 'SFRNormalizedVariableDust'
 fdust = None
+tod_remove_host_cell_dust = True # Remove diffuse dust in young TODDLERS host cells.
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 #@@@@@@@@@@@ setting for the medium system @@@@@@@@@@@@# 
@@ -196,7 +198,7 @@ storeRadiationField = 'true' # storeRadiationField can be important in some case
                             # However, if you don't use secondary emission, dont' mind.
 radfield_type = 'log'
 radfield_unit = 'micron'
-radfield_min_wv = 0.1 # micron
+radfield_min_wv = 0.01 # micron
 radfield_max_wv = 1000 # micron
 radfield_N_wv = 500 
 #------------------------------------------------------------#

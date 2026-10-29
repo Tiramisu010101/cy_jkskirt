@@ -198,6 +198,7 @@ def make_INSKI(
                             adaptive_smoothing=param.adaptive_smoothing,
                             n_targ_nbr=param.n_targ_nbr,
                             n_job_smoothing=param.n_job_smoothing,
+                            tod_remove_host_cell_dust=getattr(param, "tod_remove_host_cell_dust", False),
                             torrey_fdust=param.torrey_fdust
                             )
     

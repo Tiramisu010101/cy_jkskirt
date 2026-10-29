@@ -39,8 +39,8 @@ if __name__=="__main__":
     gals_tot = np.flip(gals_tot)
     mlow = 9.5
     mupp = 12
-    mask = np.isin(gals_tot['id'],[3,6,34,18,79,23,21,33,30,35,4,11,17,1,74])
-    # mask = np.isin(gals_tot['id'],[3])
+    # mask = np.isin(gals_tot['id'],[3,6,34,18,79,23,21,33,30,35,4,11,17,1,74])
+    mask = np.isin(gals_tot['id'],[3])
     gals = gals_tot[mask]
     print(gals['m'])
 
@@ -67,8 +67,8 @@ if __name__=="__main__":
         p_mSil_large = cell['d4']*cell['m','Msun']/SioverSil
 
         p_m_H = cell['m','Msun']
-        sfe_s = np.full_like(star['m','Msun'], 0.045)
-        # cnd_s = np.full_like(star['m','Msun'], 320)
+        sfe_s = np.full_like(star['m','Msun'], 0.025) # Follwing SKIRT-COLIBRE pipeline
+        cnd_s = np.full_like(star['m','Msun'], 320) # Follwing SKIRT-COLIBRE pipeline
 
         repo_par = '/storage8/yuchang/obscured_2/'
         fname_par = 'parameter_setting_new_include_spitzer'
@@ -81,19 +81,7 @@ if __name__=="__main__":
         sys.path.append(repo_par)
         par = __import__(fname_par)
 
-        par.skirt_dir = '/storage8/yuchang/SKIRT/release/SKIRT/main'
-        par.N_phot = 5e8
-        par.maxSize = 1e-4 #[cm]
-        par.repo = '/storage8/yuchang/NCdustfix2_live_todincfalse_bpass0009_norot/'
-        par.fov_X = 20
-        par.fov_Y = 20
-        par.pscale_X = 0.1 # pixel scale for X-direction.
-        par.pscale_Y = 0.1
-        par.radfield_min_wv = 0.02 # micron
-        par.radfield_max_wv = 10 # micron
-        par.radfield_N_wv = 40 
-        par.add_young = True
-        par.Age_Cut = 0.03
+        par.repo = f'/storage1/yuchang/Attenuation/gal_{nout:04d}/{gals['id']:04d}/'
 
         par.add_pah = False
         p_mPAHneu = []
@@ -119,7 +107,7 @@ if __name__=="__main__":
             nbrs = NearestNeighbors(n_neighbors=1, algorithm='auto').fit(X_grid) # fit the cell positions
             distances, indices = nbrs.kneighbors(X_compare)                      # find the nearest cell for each star
 
-            cell_shape = cell_new['x','kpc'].shape
+            cell_shape = cell['x','kpc'].shape
 
             pahf_ion = np.zeros(len(XcSET), dtype=float)
             pahf_neu = np.zeros(len(XcSET), dtype=float)
@@ -151,57 +139,6 @@ if __name__=="__main__":
 
         ###########################################################################
 
-        
-        par.on_the_fly_dust = True
-        par.metal_dependent_dust = True
-        par.mtd_mod = 'Torrey'
-        par.torrey_fdust = 0.34 # Torrey et al. 2019, fraction of the metallic gas locked up in dust
-        par.importTemperature = False 
-        
-        
-        par.def_wv_grid = 'pre-defined'
-        par.includeGALEX = 'false' # if you want to get 2D GALEX filter image
-        par.includejohnson = 'false' # if you want to get 2D Johnson filter image
-        par.includespitzer = 'false' # if you want to get 2D Spitzer filter image
-        par.includeSDSS = 'true' # if you want to get 2D SDSS filter image
-        par.include2MASS = 'false' # if you want to get 2D 2MASS filter image
-        par.includeWISE = 'false' # if you want to get 2D WISE filter image
-        par.includeHERSCHEL = 'false' # if you want to get 2D Herschel filter image
-        par.CustomFilterList = ['HST_ACS_WFC_F814W','HST_WFC3_IR_F160W','JWST_NIRCAM_F115W','JWST_NIRCAM_F150W','JWST_NIRCAM_F277W','JWST_NIRCAM_F444W','ALMA_ALMA_7','ALMA_ALMA_9']
-
-        par.visual = False
-        
-        par.rotating_gal = False
-        par.aperture_min = 10
-        par.aperture_max = 10
-
-        par.N_thread = 48
-        
-        par.wv_source_min = 0.0001
-        par.wv_bias_min = 0.0001
-        par.SED_pah_y = 'high'
-        par.SED_type_o = 'Bpass'
-        # par.SED_type_o = 'BC03'
-        par.SED_IMF_o = 'Chabrier300'
-        par.tod_sedtemplate = 'BPASSChab300Bin'
-        par.tod_sfrperiod = 'Period30Myr'
-        # par.SED_res_o = 'High'
-        par.SED_res_o = 'Downsampled'
-        par.mode = 'DustAndGasEmission'
-        par.dustEmissionOptions = 'true'
-        par.dustemtype = 'Stochastic' # possible option : ' Equilibrium', 'Stochastic'
-        par.tod_includedust = 'false'
-        par.inc_del = 30
-        par.recordStatistics = 'true'
-        # par.inc_default = 'kapoor'
-
-        par.z_red = 5.007
-        par.inst_dist = 0
-        par.repo_output = f'{id:04d}'
-        par.inst_2d_sed_on = True
-        par.inst_2d_sed_max_wv = 7000
-        par.inst_sed_max_wv = 7000
-
 
         print('Total photon packet Number = 10^{%s}'%(np.round(np.log10(par.N_phot),2)),end='\n\n')
         print('Redshift of the target = %s'%(par.z_red))
@@ -210,28 +147,29 @@ if __name__=="__main__":
         print('Field-of-View (Y-direction) = %s %s'%(par.fov_Y,par.fov_unit),end='\n\n')
         print('Using on-the-fly-dust info = %s'%(par.on_the_fly_dust),end='\n\n')
         print('The file will be saved in %s/%s'%(par.repo,par.repo_output),end='\n\n')
-        print('age cut 30Myr????????')
-        # par.repo = f'/storage8/jangjk/mock/NC/gal_{nout:04d}/{idgal:04d}/'
 
         gskirt.utils.execute_SKIRT.make_INSKI(
                                                 boxtokpc=boxtokpc,
-                                                x_s=star['x'],y_s=star['y'],z_s=star['z'],
-                                                vx_s=star['vx','km/s'],vy_s=star['vy','km/s'],vz_s=star['vz','km/s'],
-                                                m_s=star['m','Msun'],m0_s=star['m0','Msun'],rho0_s=star['rho0','H/cc'],
-                                                sfe_s=sfe_s,
-                                                age_s=star['age','Gyr'],metal_s=star['metal'],
+                                                x_s=star['x'],y_s=star['y'],z_s=star['z'], # position
+                                                vx_s=star['vx','km/s'],vy_s=star['vy','km/s'],vz_s=star['vz','km/s'], # velocity
+                                                m_s=star['m','Msun'],age_s=star['age','Gyr'],metal_s=star['metal'], # stellar population
+                                                # m0_s=star['m0','Msun'],rho0_s=star['rho0','H/cc'],sfe_s=sfe_s, # young stellar population
+                                                m0_s=star['m0','Msun'],rho0_s=cnd_s,sfe_s=sfe_s, # young stellar population
+
                                                 x_c=cell['x'],y_c=cell['y'],z_c=cell['z'],
-                                                lvl_c=cell['level'],
                                                 vx_c=cell['vx','km/s'],vy_c=cell['vy','km/s'],vz_c=cell['vz','km/s'],
+                                                lvl_c=cell['level'],
                                                 m_c=p_m_H,
-                                                T_c=cell['T','K'],metal_c=cell['metal'],
+                                                T_c=cell['T','K'], metal_c=cell['metal'],
                                                 param=par,
                                                 pos_ctr=[gal['x'],gal['y'],gal['z']],
                                                 vel_ctr=[gal['vx'],gal['vy'],gal['vz']],
+
                                                 mC_small=p_mC_small,
                                                 mC_large=p_mC_large,
                                                 mSil_small=p_mSil_small,
                                                 mSil_large=p_mSil_large,
+
                                                 mPAHneu=p_mPAHneu,
                                                 mPAHion=p_mPAHion
                                                 )

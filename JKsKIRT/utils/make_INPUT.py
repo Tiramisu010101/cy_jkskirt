@@ -168,6 +168,7 @@ def make_input(
 
            torrey_fdust=0.14,
            todsedMode='SFRNormalized',
+           tod_remove_host_cell_dust=False,
            fdust=None
            ):
     
@@ -200,6 +201,57 @@ def make_input(
         dx_c = l_simbox / (2**lvl_c) * boxtokpc
     else:
         dx_c = dx_dirt
+
+    if tod_remove_host_cell_dust in [True, 'true']:
+        if not (cell_medium and on_the_fly_dust in [True, 'true']):
+            raise ValueError("tod_remove_host_cell_dust requires cell_medium=True and on_the_fly_dust=True")
+        if add_young and SED_type_y.lower() == 'toddlers':
+            from scipy.spatial import cKDTree
+            # Match before rotation: AMR cell boundaries are axis aligned here.
+            sort = (Age_Cut > age_s)
+            pos_star = np.column_stack((x_s[sort], y_s[sort], z_s[sort]))
+            pos_cell = np.column_stack((x_c, y_c, z_c))
+            host_idx = np.full(len(pos_star), -1, dtype=int)
+            # Search each cell size separately; a nearest centre across all
+            # AMR levels need not belong to the cell containing the star.
+            for width in np.unique(dx_c):
+                pending = np.flatnonzero(host_idx < 0)
+                if not len(pending):
+                    break
+                cells = np.flatnonzero(np.asarray(dx_c) == width)
+                tree_cell = cKDTree(pos_cell[cells])
+                dist, nearest = tree_cell.query(pos_star[pending], k=1, p=np.inf)
+                inside = dist <= width / 2
+                host_idx[pending[inside]] = cells[nearest[inside]]
+            idx = host_idx[host_idx >= 0]
+            # Preserve original host-cell values before clearing output dust.
+            # Apply the supplied scale before clearing host-cell dust.
+            localDTM = (np.asarray(mC_small)[idx] + np.asarray(mC_large)[idx]
+                        + np.asarray(mSil_small)[idx] + np.asarray(mSil_large)[idx])
+            matched_fdust = localDTM / 0.456
+            young_indices = np.flatnonzero(sort)
+            matched = host_idx >= 0
+            # Keep the full stellar indexing used by fdust[sort] on output.
+            fdust = np.zeros(len(age_s), dtype=float)
+            if len(young_indices):
+                if not np.any(matched):
+                    raise ValueError("No matched young stars available to calculate median fdust")
+                fdust[young_indices] = np.median(matched_fdust)
+                fdust[young_indices[matched]] = matched_fdust
+            host_cells = np.unique(idx)
+            mC_small = np.array(mC_small, copy=True)
+            mC_large = np.array(mC_large, copy=True)
+            mSil_small = np.array(mSil_small, copy=True)
+            mSil_large = np.array(mSil_large, copy=True)
+            for dust_mass in (mC_small, mC_large, mSil_small, mSil_large):
+                dust_mass[host_cells] = 0
+            if add_pah in [True, 'true']:
+                mPAHneu = np.array(mPAHneu, copy=True)
+                mPAHion = np.array(mPAHion, copy=True)
+                mPAHneu[host_cells] = 0
+                mPAHion[host_cells] = 0
+            print("done -- removed dust from %s TODDLERS host cells; %s young stars unmatched"
+                  % (len(host_cells), np.count_nonzero(host_idx < 0)))
 
     print("done -- basic setting")
     
@@ -242,7 +294,7 @@ def make_input(
         distances, indices = nbrs.kneighbors(XSET)
         dx_adaptive = distances[:,n_targ_nbr]*1e3 #kpc to pc
         print("done -- calculating distance to the Nth-nearest neighbor (N=%s)"%(n_targ_nbr))
-        
+
     if on_the_fly_dust in [False,'false'] and metal_dependent_dust in [True,'true']:
         print("start -- calculating metallicity dependent Dust-to-Gas ratio")
         if mtd_mod == 'Li2019':
