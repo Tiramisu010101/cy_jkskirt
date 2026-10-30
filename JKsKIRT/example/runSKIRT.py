@@ -6,6 +6,8 @@ from importlib import reload
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+
 
 if __name__=="__main__":
     
@@ -14,6 +16,7 @@ if __name__=="__main__":
     import JKsKIRT as gskirt
 
     from rur import uri, uhmi
+
     SioverSil = 0.163 
 
     nout = 78
@@ -37,15 +40,22 @@ if __name__=="__main__":
                                         extend=True)
     gals_tot.sort(order='m')
     gals_tot = np.flip(gals_tot)
-    mlow = 9.5
+    mlow = 8
     mupp = 12
-    # mask = np.isin(gals_tot['id'],[3,6,34,18,79,23,21,33,30,35,4,11,17,1,74])
-    mask = np.isin(gals_tot['id'],[3])
-    gals = gals_tot[mask]
-    print(gals['m'])
+    mask = (gals_tot['m'] >= 10**mlow) * (gals_tot['m'] <= 10**mupp)
+    gals_tot = gals_tot[mask]
 
-    for id in gals['id']:
-        gal = gals[gals['id']==id]
+    df = pd.read_csv('/home/yuchang/Attenuation/galaxy_properties.csv', index_col='id')
+    id_arr = df.index.to_numpy()
+    R90_arr = df['R90'].to_numpy()
+
+
+    mask = np.isin(gals_tot['id'],id_arr[0])
+    gals = gals_tot[mask]
+
+    for gal in gals:
+        id = int(gal['id'])
+        print('Processing galaxy id = %s'%(id),end='\n\n')
         snap.clear()
         snap = uri.RamsesSnapshot(repo=repo, 
                                 path_in_repo=path_in_repo, 
@@ -60,6 +70,27 @@ if __name__=="__main__":
         star = snap.get_part(pname='star')
         cell = snap.get_cell()
         snap.clear()
+
+        center = np.array([
+            gal['x'],
+            gal['y'],
+            gal['z']
+        ])
+
+        pos = np.column_stack([star['x'], star['y'], star['z']])
+        pos_cell = np.column_stack([cell['x'], cell['y'], cell['z']])
+        
+        dpos = (pos - center) * boxtokpc
+        r = np.sqrt(np.sum(dpos**2, axis=1))
+        pos_mask = r <= R90_arr[np.where(id_arr == id)[0][0]] * 1.5
+
+        dpos_cell = (pos_cell - center) * boxtokpc
+        r_cell = np.sqrt(np.sum(dpos_cell**2, axis=1))
+        pos_mask_cell = r_cell <= R90_arr[np.where(id_arr == id)[0][0]] * 1.5
+
+        star = star[pos_mask]
+        cell = cell[pos_mask_cell]
+
         
         p_mC_small = cell['d1']*cell['m','Msun']
         p_mC_large = cell['d2']*cell['m','Msun']
@@ -70,8 +101,8 @@ if __name__=="__main__":
         sfe_s = np.full_like(star['m','Msun'], 0.025) # Follwing SKIRT-COLIBRE pipeline
         cnd_s = np.full_like(star['m','Msun'], 320) # Follwing SKIRT-COLIBRE pipeline
 
-        repo_par = '/storage8/yuchang/obscured_2/'
-        fname_par = 'parameter_setting_new_include_spitzer'
+        repo_par = '/home/yuchang/JKsKIRT/JKsKIRT/example/'
+        fname_par = 'Attenuation_parameter'
 
         try:
             par = reload(sys.modules[fname_par])
@@ -81,7 +112,7 @@ if __name__=="__main__":
         sys.path.append(repo_par)
         par = __import__(fname_par)
 
-        par.repo = f'/storage1/yuchang/Attenuation/gal_{nout:04d}/{gals['id']:04d}/'
+        par.repo = f'/storage1/yuchang/Attenuation/gal_{nout:04d}/{id:04d}/'
 
         par.add_pah = False
         p_mPAHneu = []
