@@ -2,11 +2,59 @@
 
 import os
 import sys
+from pathlib import Path
 from importlib import reload
 
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+
+
+def choose_start_index(id_arr, output_root):
+    """Show existing outputs, then ask where to start in CSV order."""
+
+    has_sed = []
+    print('\nOrder  Galaxy ID  Existing output (file presence is not completion)')
+    for order, galaxy_id in enumerate(id_arr, start=1):
+        folder = Path(output_root) / f'{int(galaxy_id):04d}'
+        sed_files = [p for p in folder.glob('*_sed.dat')
+                     if p.is_file() and p.stat().st_size > 0]
+        has_sed.append(bool(sed_files))
+        status = (f'{len(sed_files)} nonempty SED file(s)' if sed_files else
+                  'folder exists, no nonempty SED file' if folder.is_dir() else
+                  'no output folder')
+        print(f'{order:5d}  {int(galaxy_id):9d}  {status}')
+
+    prefix = 0
+    for exists in has_sed:
+        if not exists:
+            break
+        prefix += 1
+    print(f'\nSED files exist consecutively for the first {prefix} galaxies.')
+    if prefix < len(id_arr):
+        print(f'First order without an SED file: {prefix + 1} (ID {int(id_arr[prefix])})')
+    else:
+        print('All listed galaxies have SED files. Select an order only to rerun.')
+
+    while True:
+        answer = input(f'Start from which order [1-{len(id_arr)}]? (q/Enter: cancel): ').strip()
+        if not answer or answer.lower() == 'q':
+            return None
+        try:
+            order = int(answer)
+        except ValueError:
+            print('Enter an order number, not a galaxy ID.')
+            continue
+        if not 1 <= order <= len(id_arr):
+            print('Order is outside the listed range.')
+            continue
+        start = order - 1
+        print(f'Will run {len(id_arr) - start} galaxies, starting at order {order}, ID {int(id_arr[start])}.')
+        if any(has_sed[start:]):
+            print('This selection includes existing SED outputs; matching output files may be overwritten.')
+        if input('Run this sequence? [y/N]: ').strip().lower() == 'y':
+            return start
+        return None
 
 
 if __name__=="__main__":
@@ -50,12 +98,22 @@ if __name__=="__main__":
     R90_arr = df['R90'].to_numpy()
 
 
-    mask = np.isin(gals_tot['id'],id_arr[0])
-    gals = gals_tot[mask]
+    galaxy_by_id = {int(gal['id']): gal for gal in gals_tot}
+    missing_ids = [int(galaxy_id) for galaxy_id in id_arr
+                   if int(galaxy_id) not in galaxy_by_id]
+    if missing_ids:
+        raise ValueError(f'CSV galaxy IDs missing from the filtered catalogue: {missing_ids}')
 
-    for gal in gals:
-        id = int(gal['id'])
-        print('Processing galaxy id = %s'%(id),end='\n\n')
+    output_root = f'/storage1/yuchang/Attenuation/gal_{nout:04d}/'
+    start_index = choose_start_index(id_arr, output_root)
+    if start_index is None:
+        print('Cancelled; no SKIRT runs started.')
+        sys.exit(0)
+
+    for order in range(start_index, len(id_arr)):
+        id = int(id_arr[order])
+        gal = galaxy_by_id[id]
+        print(f'Processing [{order + 1}/{len(id_arr)}] galaxy id = {id}', end='\n\n')
         snap.clear()
         snap = uri.RamsesSnapshot(repo=repo, 
                                 path_in_repo=path_in_repo, 
@@ -112,7 +170,7 @@ if __name__=="__main__":
         sys.path.append(repo_par)
         par = __import__(fname_par)
 
-        par.repo = f'/storage1/yuchang/Attenuation/gal_{nout:04d}/'
+        par.repo = output_root
         par.repo_output = f'{id:04d}/'
         par.add_pah = False
         p_mPAHneu = []
