@@ -112,8 +112,8 @@ if __name__=="__main__":
         sys.path.append(repo_par)
         par = __import__(fname_par)
 
-        par.repo = f'/storage1/yuchang/Attenuation/gal_{nout:04d}/{id:04d}/'
-
+        par.repo = f'/storage1/yuchang/Attenuation/gal_{nout:04d}/'
+        par.repo_output = f'{id:04d}/'
         par.add_pah = False
         p_mPAHneu = []
         p_mPAHion = []
