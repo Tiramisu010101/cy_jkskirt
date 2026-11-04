@@ -361,6 +361,7 @@ def make_INSKI(
                    inst_2d_sed_repo=param.inst_2d_sed_repo,
                    inst_2d_sed_fname=param.inst_2d_sed_fname,
                    inst_2d_sed_relHW=param.inst_2d_sed_relHW,
+                   los_angles=getattr(param, "los_angles", None),
                    inst_1d_sed_only=param.inst_1d_sed_only,
                    save_1d_sed=param.save_1d_sed,
                    aperture_unit=param.aperture_unit, 

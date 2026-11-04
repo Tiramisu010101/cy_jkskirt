@@ -9,6 +9,19 @@ import numpy as np
 import pandas as pd
 
 
+def fibonacci_los(n_los):
+    """Return unit directions and (inclination, azimuth) pairs in degrees."""
+    if isinstance(n_los, bool) or not isinstance(n_los, (int, np.integer)) or n_los < 1:
+        raise ValueError('n_los must be a positive integer')
+    i = np.arange(n_los)
+    z = 1 - 2 * (i + 0.5) / n_los
+    phi = (i * np.pi * (3 - np.sqrt(5))) % (2 * np.pi)
+    r = np.sqrt(1 - z**2)
+    directions = np.column_stack((r * np.cos(phi), r * np.sin(phi), z))
+    angles = np.column_stack((np.degrees(np.arccos(z)), np.degrees(phi)))
+    return directions, angles
+
+
 def choose_start_index(targets, output_base):
     """Select a start position in the ordered (nout, id, R90) target list."""
     if not targets:
@@ -69,6 +82,8 @@ if __name__=="__main__":
 
     SioverSil = 0.163 
     boxrad = 10
+    n_los = 20  # Number of Fibonacci-sphere sightlines; shared by all galaxies.
+    los_vectors, los_angles = fibonacci_los(n_los)
 
     # Resolve the CSV before SKIRT changes the working directory.
     csv_path = Path('/home/yuchang/Attenuation/galaxy_properties_15.csv')
@@ -175,6 +190,19 @@ if __name__=="__main__":
 
         par.repo = output_root
         par.repo_output = f'{id:04d}/'
+        par.los_angles = los_angles
+        par.inst_1d_sed_only = True
+        par.save_1d_sed = True
+        los_dir = Path(par.repo) / par.repo_output
+        los_dir.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame({
+            'los_id': np.arange(n_los),
+            'instrument_prefix': [f'los_{i:03d}' for i in range(n_los)],
+            'inclination_deg': los_angles[:, 0],
+            'azimuth_deg': los_angles[:, 1],
+            'roll_deg': np.full(n_los, par.roll_default),
+            'x': los_vectors[:, 0], 'y': los_vectors[:, 1], 'z': los_vectors[:, 2],
+        }).to_csv(los_dir / 'fibonacci_los.csv', index=False)
         par.add_pah = False
         p_mPAHneu = []
         p_mPAHion = []

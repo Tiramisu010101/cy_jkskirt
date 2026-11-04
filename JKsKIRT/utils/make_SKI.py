@@ -245,7 +245,8 @@ def writing_ski(
                 dustem_N_wv_sub=400,
                 includeHeatingByCMB='true',
                 maxFractionOfPrimary=0.01,
-                maxFractionOfPrevious=0.03
+                maxFractionOfPrevious=0.03,
+                los_angles=None
                 ):
     
     
@@ -419,6 +420,7 @@ def writing_ski(
                                    pscale_Y=pscale_Y,
                                    centre_X=centre_X,
                                    centre_Y=centre_Y,
+                                   los_angles=los_angles,
                                    inst_1d_sed_only=inst_1d_sed_only,
                                    save_1d_sed=save_1d_sed,
                                    aperture_unit=aperture_unit, 
