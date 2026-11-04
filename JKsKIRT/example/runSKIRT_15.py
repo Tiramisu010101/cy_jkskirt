@@ -190,6 +190,9 @@ if __name__=="__main__":
 
         par.repo = output_root
         par.repo_output = f'{id:04d}/'
+        par.z_red = float(df.loc[(nout, id), 'z'])
+        if par.z_red > 0:
+            par.inst_dist = 0
         par.los_angles = los_angles
         par.inst_1d_sed_only = True
         par.save_1d_sed = True
