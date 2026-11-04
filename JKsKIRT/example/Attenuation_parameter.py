@@ -8,7 +8,7 @@ opart_name = 'part_old.txt' # old population stellar input will be saved with th
 ypart_name = 'part_young.txt' # younger population stellar input will be saved with this given file name 
 gas_name = 'gas_cell.txt' # gaseous input will be saved with this given file name 
 
-ski_name = 'att_test.ski' # ski file (the parameter file that SKIRT read) will be saved with this given file name 
+ski_name = 'att.ski' # ski file (the parameter file that SKIRT read) will be saved with this given file name 
 
 exe_skirt = True # If you want to execute SKIRT after saving the input files 
 del_input = True # If you want to delete the input particle/gaseous files after running SKIRT
