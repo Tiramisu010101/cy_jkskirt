@@ -1,0 +1,238 @@
+{
+  "status": "succeeded",
+  "format": "SKIRT StoredTable",
+  "mode": "custom age-dependent Cloud",
+  "science_id": "6690920cfdbd977f7013aa80c4c38b3b52fe23b52e7b68336b5b8e1bc5cc389f",
+  "source_hdf5": "/storage6/jangjk816/toddlers_v2/run/campaigns/custom_cloud16_20261105/tables/Cloud_custom.h5",
+  "source_sha256": "027214ed12fc11ac02016d5fe2ed9cd4c96054ebe6e8d78fe34c18497792d5b9",
+  "reference_sha256": "3c3a5b9e33b8649a14c795a6b640e233657390cc1cae6a5faf7e417f0603553b",
+  "axis_specification": "lambda(m),time(Myr),Z(1),f_dust(1),r_sl(1)",
+  "quantity_specification": "Llambda(W/m)",
+  "physical_axes": [
+    {
+      "name": "time",
+      "unit": "Myr",
+      "scale": "lin",
+      "values": [
+        0.1,
+        0.35,
+        0.6,
+        0.85,
+        1.1,
+        1.35,
+        1.6,
+        1.85,
+        2.1,
+        2.35,
+        2.6,
+        2.85,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ]
+    },
+    {
+      "name": "Z",
+      "unit": "1",
+      "scale": "log",
+      "values": [
+        0.000134,
+        0.0004237452064625628,
+        0.00134,
+        0.004237452064625629,
+        0.007535373757550678,
+        0.0134
+      ]
+    },
+    {
+      "name": "f_dust",
+      "unit": "1",
+      "scale": "lin",
+      "values": [
+        0.02,
+        0.05,
+        0.1,
+        0.2
+      ]
+    },
+    {
+      "name": "r_sl",
+      "unit": "1",
+      "scale": "lin",
+      "values": [
+        0.1,
+        0.25,
+        0.4
+      ]
+    }
+  ],
+  "fixed_parameters": {
+    "sfe": 0.045,
+    "n_cl_cm3": 300.0,
+    "M_cl_msun": 3162277.6601683795,
+    "q_pah": 0.0
+  },
+  "physics_config": {
+    "M_cl_msun": 3162277.6601683795,
+    "Z": [
+      0.000134,
+      0.0004237452064625628,
+      0.00134,
+      0.004237452064625629,
+      0.007535373757550678,
+      0.0134
+    ],
+    "Z_solar_for_requested_axis": 0.0134,
+    "age_myr": [
+      0.1,
+      0.35,
+      0.6,
+      0.85,
+      1.1,
+      1.35,
+      1.6,
+      1.85,
+      2.1,
+      2.35,
+      2.6,
+      2.85,
+      3.0,
+      4.0,
+      5.0,
+      6.0,
+      7.0,
+      8.0,
+      9.0,
+      10.0
+    ],
+    "campaign": "custom_cloud16_20261105",
+    "dynamics_dust_policy": "shared_fiducial_fdust_1",
+    "f_dust": [
+      0.02,
+      0.05,
+      0.1,
+      0.2
+    ],
+    "gas_and_dust_metallicity": "directly evaluated at requested Z; native internal abundance normalizations retained",
+    "imf": "chab100",
+    "log10_Z_over_Z_solar": [
+      -2.0,
+      -1.5,
+      -1.0,
+      -0.5,
+      -0.25,
+      0.0
+    ],
+    "n_cl_cm3": 300.0,
+    "numerical_profile": "native_full_UV_IR_stochastic_heating_and_molecules",
+    "product": "age_dependent_cloud",
+    "q_pah": 0.0,
+    "r_sl": [
+      0.1,
+      0.25,
+      0.4
+    ],
+    "sfe": 0.045,
+    "star_type": "bin",
+    "stellar_metallicity_interpolation": "linear log10(stored BPASS feedback channel) vs log10(Z); existing Cloudy stellar spectrum interpolation in log Z; no extrapolation",
+    "stellar_template": "BPASS"
+  },
+  "metallicity_interpolation": {
+    "method": "linear log10(stored channel) vs log10(Z); no extrapolation",
+    "source_path": "/storage6/jangjk816/toddlers_v2/run/src/TODDLERS/src/toddlers/database/BPASS_chab100_bin_feedback.h5",
+    "source_sha256": "404cc3f30881f95c06f9a1bc9b5d509e3aacd65bb59cb73437b727368be4752d",
+    "source_Z": [
+      1e-05,
+      0.0001,
+      0.001,
+      0.002,
+      0.003,
+      0.004,
+      0.006,
+      0.008,
+      0.01,
+      0.014,
+      0.02,
+      0.03,
+      0.04
+    ],
+    "target_Z": [
+      0.000134,
+      0.0004237452064625628,
+      0.00134,
+      0.004237452064625629,
+      0.007535373757550678,
+      0.0134
+    ],
+    "time_axis_unchanged": true
+  },
+  "stock_toddlers_cloud_reader_compatible": false,
+  "tables": [
+    {
+      "filename": "ToddlersCloudCustom_BPASS_chab100_bin_Dust_lr.stab",
+      "resolution": "lr",
+      "dust": "Dust",
+      "spectra": 1440,
+      "wavelength_nodes": 3787,
+      "wavelength_range_m": [
+        1.00207e-08,
+        0.002996949999999999
+      ],
+      "values_compared": 5453280,
+      "bytes": 43657024,
+      "sha256": "a2bcdb2c674d4a584498e4be62553508a3beba78f5654763ca124fdc1c2d4b5f",
+      "native_pts_readback_exact": true
+    },
+    {
+      "filename": "ToddlersCloudCustom_BPASS_chab100_bin_noDust_lr.stab",
+      "resolution": "lr",
+      "dust": "noDust",
+      "spectra": 1440,
+      "wavelength_nodes": 3787,
+      "wavelength_range_m": [
+        1.00207e-08,
+        0.002996949999999999
+      ],
+      "values_compared": 5453280,
+      "bytes": 43657024,
+      "sha256": "aedd688a111d7200b5ca4482cf60383fac6250587a536f9a3e7bc1d7ad7c3264",
+      "native_pts_readback_exact": true
+    },
+    {
+      "filename": "ToddlersCloudCustom_BPASS_chab100_bin_Dust_hr.stab",
+      "resolution": "hr",
+      "dust": "Dust",
+      "spectra": 1440,
+      "wavelength_nodes": 9520,
+      "wavelength_range_m": [
+        1.00207e-08,
+        0.002996949999999999
+      ],
+      "values_compared": 13708800,
+      "bytes": 109747048,
+      "sha256": "5ed86971727944972b572a271d285ed77eb804eeb73e90afddff09006cfb18f2",
+      "native_pts_readback_exact": true
+    },
+    {
+      "filename": "ToddlersCloudCustom_BPASS_chab100_bin_noDust_hr.stab",
+      "resolution": "hr",
+      "dust": "noDust",
+      "spectra": 1440,
+      "wavelength_nodes": 9520,
+      "wavelength_range_m": [
+        1.00207e-08,
+        0.002996949999999999
+      ],
+      "values_compared": 13708800,
+      "bytes": 109747048,
+      "sha256": "39f4fd3f2d44a9ea243a78733ba83340c95547bcaa3dfd5cd0d79b622eea12ed",
+      "native_pts_readback_exact": true
+    }
+  ],
+  "finished_utc": "2026-11-06T13:24:57.735816+00:00"
+}
