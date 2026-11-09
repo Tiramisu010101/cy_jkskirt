@@ -246,7 +246,8 @@ def writing_ski(
                 includeHeatingByCMB='true',
                 maxFractionOfPrimary=0.01,
                 maxFractionOfPrevious=0.03,
-                los_angles=None
+                los_angles=None,
+                tod_custom_table_directory=None
                 ):
     
     
@@ -301,6 +302,7 @@ def writing_ski(
                                   tod_includedust=tod_includedust,
                                   tod_sfrperiod=tod_sfrperiod,
                                   todsedMode=todsedMode,
+                                  tod_custom_table_directory=tod_custom_table_directory,
                                   indent=indent,
                                   indent_base=N_idt
                                   )

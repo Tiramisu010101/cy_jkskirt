@@ -42,7 +42,8 @@ def Source_System(wfile,
 
                   indent,
                   indent_base,
-                  todsedMode='SFRNormalized'
+                  todsedMode='SFRNormalized',
+                  tod_custom_table_directory=None
                   ):
                   
     N_idt = indent_base
@@ -133,6 +134,11 @@ def Source_System(wfile,
             dummy = SEDFamily.MappingsIII(wfile=wfile,
                                           indent=indent,
                                           indent_base=N_idt+4)
+        elif sed_type_young.lower() == 'toddlerscustomcloud':
+            SEDFamily.ToddlersCustomCloud(
+                wfile=wfile, indent=indent, indent_base=N_idt+4,
+                includedust=tod_includedust, resolution=sed_res_young,
+                table_directory=tod_custom_table_directory)
         elif sed_type_young == 'Toddlers' or sed_type_young == 'toddlers':
             dummy = SEDFamily.Toddlers(wfile=wfile,
                                         indent=indent,

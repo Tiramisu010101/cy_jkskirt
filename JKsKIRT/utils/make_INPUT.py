@@ -169,7 +169,9 @@ def make_input(
            torrey_fdust=0.14,
            todsedMode='SFRNormalized',
            tod_remove_host_cell_dust=False,
-           fdust=None
+           fdust=None,
+           tod_r_sl=None,
+           tod_scaling=None
            ):
     
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -205,7 +207,7 @@ def make_input(
     if tod_remove_host_cell_dust in [True, 'true']:
         if not (cell_medium and on_the_fly_dust in [True, 'true']):
             raise ValueError("tod_remove_host_cell_dust requires cell_medium=True and on_the_fly_dust=True")
-        if add_young and SED_type_y.lower() == 'toddlers':
+        if add_young and SED_type_y.lower() in ('toddlers', 'toddlerscustomcloud'):
             from scipy.spatial import cKDTree
             # Match before rotation: AMR cell boundaries are axis aligned here.
             sort = (Age_Cut > age_s)
@@ -238,6 +240,18 @@ def make_input(
                     raise ValueError("No matched young stars available to calculate median fdust")
                 fdust[young_indices] = np.median(matched_fdust)
                 fdust[young_indices[matched]] = matched_fdust
+                print("TODDLERS matched-host median fdust (before SKIRT clamping): %g"
+                      % np.median(matched_fdust))
+            if SED_type_y.lower() == 'toddlerscustomcloud':
+                # Read the same hosts before removing diffuse dust. As for fdust,
+                # host-derived values replace supplied values in this mode.
+                small = np.asarray(mC_small) + np.asarray(mSil_small)
+                large = np.asarray(mC_large) + np.asarray(mSil_large)
+                tod_r_sl = np.zeros(len(age_s), dtype=float)
+                tod_r_sl[young_indices] = _host_cell_r_sl(host_idx, small, large)
+                if np.any(matched):
+                    print("TODDLERS matched-host median tod_r_sl (before SKIRT clamping): %g"
+                          % np.median(tod_r_sl[young_indices[matched]]))
             host_cells = np.unique(idx)
             mC_small = np.array(mC_small, copy=True)
             mC_large = np.array(mC_large, copy=True)
@@ -252,6 +266,10 @@ def make_input(
                 mPAHion[host_cells] = 0
             print("done -- removed dust from %s TODDLERS host cells; %s young stars unmatched"
                   % (len(host_cells), np.count_nonzero(host_idx < 0)))
+
+    if add_young and SED_type_y.lower() == 'toddlerscustomcloud':
+        custom_parameters = _custom_cloud_parameters(
+            age_s, metal_s, Age_Cut, fdust, tod_r_sl, tod_scaling)
 
     print("done -- basic setting")
     
@@ -589,6 +607,28 @@ def make_input(
                 young_fbase+young_fname,
                 young_arr, delimiter=' ', newline='\n', header=header, footer='', comments='# ', encoding=None)
     
+        elif SED_type_y.lower() == 'toddlerscustomcloud':
+            sort = (Age_Cut > age_s)
+            columns = [x_s[sort], y_s[sort], z_s[sort],
+                       dx_adaptive[sort] if adaptive_smoothing else
+                       np.full(np.count_nonzero(sort), dx_s_y)]
+            labels = ["position x (kpc)", "position y (kpc)",
+                      "position z (kpc)", "smoothing length (pc)"]
+            if import_velocity == 'true':
+                columns.extend([vx_s[sort], vy_s[sort], vz_s[sort]])
+                labels.extend(["velocity x (km/s)", "velocity y (km/s)", "velocity z (km/s)"])
+            if import_dispersion == 'true':
+                columns.append(np.full(np.count_nonzero(sort), sig_s))
+                labels.append("velocity dispersion (km/s)")
+            columns.extend(custom_parameters)
+            labels.extend(["age (Myr)", "metallicity (1)",
+                           "grain abundance scaling factor (1)",
+                           "small-to-large grain mass ratio (1)",
+                           "cloud luminosity scaling factor (1)"])
+            header = "\n".join("Column %s: %s" % (i + 1, label)
+                               for i, label in enumerate(labels))
+            np.savetxt(young_fbase + young_fname, np.column_stack(columns), header=header)
+
         elif SED_type_y in ['Toddlers','toddlers','TODDLERS']:
             sort = (Age_Cut > age_s)
             columns = [x_s[sort], y_s[sort], z_s[sort],
@@ -814,10 +854,16 @@ def make_input0(
                 n_job_smoothing=32,
                 todsedMode='SFRNormalized',
                 fdust=None,
+                tod_r_sl=None,
+                tod_scaling=None,
                 ):
     
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
+    if add_young and SED_type_y.lower() == 'toddlerscustomcloud':
+        custom_parameters = _custom_cloud_parameters(
+            age_s, metal_s, Age_Cut, fdust, tod_r_sl, tod_scaling)
+
     if adaptive_smoothing == True:
         from sklearn.neighbors import NearestNeighbors
 
@@ -1099,6 +1145,28 @@ def make_input0(
                 young_fbase+young_fname,
                 young_arr, delimiter=' ', newline='\n', header=header, footer='', comments='# ', encoding=None)
     
+        elif SED_type_y.lower() == 'toddlerscustomcloud':
+            sort = (Age_Cut > age_s)
+            columns = [x_s[sort], y_s[sort], z_s[sort],
+                       dx_adaptive[sort] if adaptive_smoothing else
+                       np.full(np.count_nonzero(sort), dx_s_y)]
+            labels = ["position x (kpc)", "position y (kpc)",
+                      "position z (kpc)", "smoothing length (pc)"]
+            if import_velocity == 'true':
+                columns.extend([vx_s[sort], vy_s[sort], vz_s[sort]])
+                labels.extend(["velocity x (km/s)", "velocity y (km/s)", "velocity z (km/s)"])
+            if import_dispersion == 'true':
+                columns.append(np.full(np.count_nonzero(sort), sig_s))
+                labels.append("velocity dispersion (km/s)")
+            columns.extend(custom_parameters)
+            labels.extend(["age (Myr)", "metallicity (1)",
+                           "grain abundance scaling factor (1)",
+                           "small-to-large grain mass ratio (1)",
+                           "cloud luminosity scaling factor (1)"])
+            header = "\n".join("Column %s: %s" % (i + 1, label)
+                               for i, label in enumerate(labels))
+            np.savetxt(young_fbase + young_fname, np.column_stack(columns), header=header)
+
         elif SED_type_y.lower() == 'toddlers' and todsedMode == 'SFRNormalizedVariableDust':
             sort = (Age_Cut > age_s)
             columns = [x_s[sort], y_s[sort], z_s[sort],
@@ -1194,3 +1262,70 @@ def make_input0(
     return
 
 
+
+
+def _custom_cloud_parameters(age_gyr, metallicity, age_cut_gyr, fdust, r_sl, scaling):
+    """Validate selected clouds; return age in Myr, Z, f_dust, r_sl, scaling.
+
+    All arrays refer to the full, unfiltered input particle array. Scalars
+    broadcast. Scaling is explicit: 1 means one template cloud, not one Msun.
+    Z, f_dust and r_sl are passed unchanged; SKIRT clamps them to its table axes.
+    No SFR or recollapse correction is inferred from particle masses.
+    """
+    age = np.asarray(age_gyr, dtype=float)
+    if age.ndim != 1 or not np.all(np.isfinite(age)):
+        raise ValueError('age_s must be a finite 1D array in Gyr')
+    if not np.isfinite(age_cut_gyr) or age_cut_gyr <= 0 or age_cut_gyr > 0.01:
+        raise ValueError('Custom clouds require 0 < Age_Cut <= 0.01 Gyr')
+    selected = age < age_cut_gyr
+    def values(value, name, lower=-np.inf, upper=np.inf):
+        if value is None:
+            raise ValueError(name + ' must be explicitly supplied for custom clouds')
+        a = np.asarray(value, dtype=float)
+        if a.ndim == 0:
+            a = np.full(age.shape, a)
+        if a.shape != age.shape:
+            raise ValueError(name + ' must be scalar or match the full age_s array')
+        a = a[selected]
+        if np.any(~np.isfinite(a)):
+            raise ValueError(name + ' must be finite')
+        if np.any(a < lower) or np.any(a > upper):
+            raise ValueError(name + ' is outside the allowed range')
+        return a
+    return [values(age * 1000., 'age (Myr)', 0.1, 10.),
+            values(metallicity, 'Z'),
+            values(fdust, 'fdust'),
+            values(r_sl, 'tod_r_sl'),
+            values(scaling, 'tod_scaling', 0., np.inf)]
+
+
+def _host_cell_r_sl(host_indices, small_dust, large_dust):
+    """Small/large grain mass ratio before host-cell dust removal.
+
+    PAHs are excluded (the custom tables have q_PAH=0). Unmatched young
+    particles use the median ratio of matched particles, just as fdust does.
+    A matched cell with zero large-grain mass has no defined ratio and fails;
+    it is not silently treated as an unmatched particle or clipped.
+    """
+    import math
+    from statistics import median
+    ratios = []
+    for host in host_indices:
+        if host < 0:
+            ratios.append(None)
+            continue
+        small, large = float(small_dust[host]), float(large_dust[host])
+        if not math.isfinite(small) or small < 0 or not math.isfinite(large) or large <= 0:
+            raise ValueError('Cannot calculate tod_r_sl: host cell %s requires finite '
+                             'nonnegative small-grain mass and positive large-grain mass' % host)
+        ratio = small / large
+        if not math.isfinite(ratio):
+            raise ValueError('Nonfinite tod_r_sl in host cell %s' % host)
+        ratios.append(ratio)
+    if not ratios:
+        return []
+    matched = [ratio for ratio in ratios if ratio is not None]
+    if not matched:
+        raise ValueError('No matched young stars available to calculate median tod_r_sl')
+    fallback = median(matched)
+    return [fallback if ratio is None else ratio for ratio in ratios]

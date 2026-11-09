@@ -191,3 +191,26 @@ def Toddlers(wfile,
 
 
 
+
+
+def ToddlersCustomCloud(wfile, indent, indent_base, includedust='true',
+                       resolution='Low', table_directory=None):
+    """Select one custom cloud table; write the filename-based C++ reader."""
+    from pathlib import PurePosixPath
+    from xml.sax.saxutils import quoteattr
+    if table_directory is None:
+        table_directory = '/home/yuchang/SKIRT/resources/SKIRT9_Resources_TODDLERS_VariableDust/SED_TODDLERS_Custom'
+    dust = str(includedust).lower()
+    resolutions = {'low': 'lr', 'high': 'hr', 'lr': 'lr', 'hr': 'hr'}
+    if dust not in ('true', 'false'):
+        raise ValueError('tod_includedust must be true or false')
+    if str(resolution).lower() not in resolutions:
+        raise ValueError('Custom cloud resolution must be Low/High or lr/hr')
+    name = 'ToddlersCloudCustom_BPASS_chab100_bin_{}_{}.stab'.format(
+        'Dust' if dust == 'true' else 'noDust', resolutions[str(resolution).lower()])
+    filename = str(PurePosixPath(table_directory) / name)
+    print(indent_base * indent + '<sedFamily type="SEDFamily">', file=wfile)
+    print((indent_base + 1) * indent + '<ToddlersCustomCloudSEDFamily filename=' +
+          quoteattr(filename) + '/>', file=wfile)
+    print(indent_base * indent + '</sedFamily>', file=wfile)
+    return indent_base
